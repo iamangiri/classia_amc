@@ -2,7 +2,6 @@ import 'package:classia_amc/blocs/home/home_bloc.dart';
 import 'package:classia_amc/themes/light_app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import '../blocs/home/home_event.dart';
 import '../blocs/home/home_state.dart';
 import '../widgets/home_overview.dart';
@@ -14,7 +13,7 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Classia AMC Dashboard'),
+        title: Text('Classia AMC Dashboard',style: TextStyle(color:AppTheme.lightTheme.scaffoldBackgroundColor),),
         backgroundColor: AppTheme.lightTheme.primaryColor,
       ),
       body: BlocProvider(

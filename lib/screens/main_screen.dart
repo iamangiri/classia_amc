@@ -43,18 +43,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         int selectedIndex = state is TabChangedState ? state.tabIndex : 0;
 
         return Scaffold(
-          appBar: AppBar(
-            title: const Text("Classia Amc's"),
-          ),
           bottomNavigationBar: MotionTabBar(
             controller: _motionTabBarController,
             initialSelectedTab: ["Home", "Market", "Portfolio", "Investors"][selectedIndex], // Updated
             labels: const ["Home", "Market", "Portfolio", "Investors"],  // Updated
             icons: const [
-              Icons.home,          // Home 🏠
-              Icons.trending_up,   // Market 📈
-              Icons.work,          // Portfolio 💼
-              Icons.account_balance_wallet, // Investors 💰
+              Icons.home,          
+              Icons.trending_up,   
+              Icons.work,          
+              Icons.account_balance_wallet, 
             ], 
             tabSize: 50,
             tabBarHeight: 55,

@@ -2,21 +2,59 @@ import 'package:flutter/material.dart';
 
 Widget buildOverview(String totalAssets, String nav) {
   return Padding(
-    padding: EdgeInsets.all(16),
-    child: Card(
-      elevation: 4,
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Text('Total Assets', style: TextStyle(fontSize: 18)),
-            Text(totalAssets, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            SizedBox(height: 16),
-            Text('NAV', style: TextStyle(fontSize: 18)),
-            Text(nav, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          ],
+    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    child: Row(
+      children: [
+        // Total Assets Card
+        Expanded(
+          child: Card(
+            elevation: 3,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Total Assets',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    totalAssets,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blue[800]),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
+        SizedBox(width: 12), // Spacing between cards
+        // NAV Card
+        Expanded(
+          child: Card(
+            elevation: 3,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'NAV',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    nav,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green[700]),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     ),
   );
 }
