@@ -6,8 +6,9 @@ import '../blocs/main_screen/main_screen_bloc.dart';
 import '../blocs/main_screen/main_screen_event.dart';
 import '../blocs/main_screen/main_screen_state.dart';
 import 'home_screen.dart';
+import 'invester_screen.dart';
 import 'market_screen.dart';
-import 'profile_screen.dart';
+import 'profile_screen.dart';  // Add Investors screen
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -24,7 +25,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     super.initState();
     _motionTabBarController = MotionTabBarController(
       initialIndex: 0,
-      length: 3,
+      length: 4,  // Update length to 4
       vsync: this,
     );
   }
@@ -43,13 +44,18 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Main Screen with BLoC'),
+            title: const Text("Classia Amc's"),
           ),
           bottomNavigationBar: MotionTabBar(
             controller: _motionTabBarController,
-            initialSelectedTab: ["Home", "Market", "Profile"][selectedIndex],
-            labels: const ["Home", "Market", "Profile"],
-            icons: const [Icons.home, Icons.business, Icons.account_circle],
+            initialSelectedTab: ["Home", "Market", "Portfolio", "Investors"][selectedIndex], // Updated
+            labels: const ["Home", "Market", "Portfolio", "Investors"],  // Updated
+            icons: const [
+              Icons.home,          // Home 🏠
+              Icons.trending_up,   // Market 📈
+              Icons.work,          // Portfolio 💼
+              Icons.account_balance_wallet, // Investors 💰
+            ], 
             tabSize: 50,
             tabBarHeight: 55,
             textStyle: const TextStyle(
@@ -79,13 +85,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   Widget _buildPageContent(int tabIndex) {
     switch (tabIndex) {
       case 0:
-        return const HomePage();
+        return DashboardScreen();
       case 1:
         return const MarketPage();
       case 2:
-        return const ProfilePage();
+        return const PortfolioPage();  // Add Portfolio page here
+      case 3:
+        return const InvestorsPage();  // Add Investors page here
       default:
-        return const HomePage();
+        return  DashboardScreen();
     }
   }
 }

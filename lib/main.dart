@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'blocs/main_screen/main_screen_bloc.dart';
 import 'routes/app_router.dart';
+import 'themes/light_app_theme.dart';
 
 
 void main() {
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: 'Classia Amcs',
+           theme: AppTheme.lightTheme,
         routerConfig: router, // Attach GoRouter
         debugShowCheckedModeBanner: false,
       ),

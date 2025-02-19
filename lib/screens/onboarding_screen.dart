@@ -39,27 +39,28 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                     }
                   },
                   children: [
-                    _buildOnboardingPage(
-                      'Welcome to Jocey Trading!',
-                      'assets/anim/trade-4.json',
-                      'We make trading simple and accessible for everyone.',
-                    ),
-                    _buildOnboardingPage(
-                      'Simple Buying & Selling',
-                      'assets/anim/trade-3.json',
-                      'Trade effortlessly with just a few taps.',
-                    ),
-                    _buildOnboardingPage(
-                      'Boost Your Earnings',
-                      'assets/anim/trade-1.json',
-                      'Trade effortlessly with just a few taps.',
-                    ),
-                    _buildOnboardingPage(
-                      'Secure & Reliable Trading',
-                      'assets/anim/trade-5.json',
-                      'Your transactions are protected with top-notch security.',
-                    ),
-                  ],
+  _buildOnboardingPage(
+    'Welcome to Classia AMC!',
+    'assets/anim/trade-4.json',
+    'Manage your assets effortlessly and reach potential investors.',
+  ),
+  _buildOnboardingPage(
+    'Create & Manage Portfolios',
+    'assets/anim/trade-3.json',
+    'Build and oversee your investment portfolios with real-time insights.',
+  ),
+  _buildOnboardingPage(
+    'Track NAV & Performance',
+    'assets/anim/trade-1.json',
+    'Monitor Net Asset Value (NAV) and optimize your fund performance.',
+  ),
+  _buildOnboardingPage(
+    'Secure & Transparent System',
+    'assets/anim/trade-5.json',
+    'Ensure compliance and security while providing transparency to investors.',
+  ),
+],
+
                 ),
                 if (showGetStartedButton)
                   Align(
