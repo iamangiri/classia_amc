@@ -15,12 +15,14 @@ class DashboardLoaded extends DashboardState {
   final List<String> sliderImages;
   final String totalAssets;
   final String nav;
+  final String lotValue;
   final List<String> recentActivities;
 
   const DashboardLoaded({
     required this.sliderImages,
     required this.totalAssets,
     required this.nav,
+    required this.lotValue,
     required this.recentActivities,
   });
 
