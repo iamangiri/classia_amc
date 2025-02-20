@@ -8,6 +8,7 @@ import '../blocs/main_screen/main_screen_state.dart';
 import 'home_screen.dart';
 import 'invester_screen.dart';
 import 'market_screen.dart';
+import 'portfolio_screen.dart';
 import 'profile_screen.dart';  // Add Investors screen
 
 class MainScreen extends StatefulWidget {
@@ -86,7 +87,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       case 1:
         return  MarketScreen();
       case 2:
-        return const PortfolioPage();  // Add Portfolio page here
+        return  PortfolioScreen();  // Add Portfolio page here
       case 3:
         return const InvestorsPage();  // Add Investors page here
       default:
