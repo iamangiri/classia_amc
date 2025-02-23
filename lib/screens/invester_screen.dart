@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../blocs/transaction/transaction_bloc.dart';
 import '../blocs/transaction/transaction_event.dart';
@@ -78,38 +79,56 @@ class InvestorScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildSummaryCard('Total Deposit', '\$5000', Colors.green),
-          _buildSummaryCard('Total Withdraw', '\$2000', Colors.red),
+          _buildSummaryCard('Total Deposit', '₹5000', Colors.green, FontAwesomeIcons.arrowUpRightDots),
+          _buildSummaryCard('Total Withdraw', '₹2000', Colors.red, FontAwesomeIcons.arrowDownShortWide),
         ],
       ),
     );
   }
 
-  // Helper function to build summary cards
-  Widget _buildSummaryCard(String title, String amount, Color color) {
+  // Helper function to build modern summary cards with icons
+  Widget _buildSummaryCard(String title, String amount, Color color, IconData icon) {
     return Card(
-      color: color.withOpacity(0.2),
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.white,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              title,
-              style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16),
+            // Icon with circular background
+            Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
             ),
-            SizedBox(height: 5),
-            Text(
-              amount,
-              style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold),
+            SizedBox(width: 12),
+
+            // Text Column
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500, fontSize: 14),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  amount, // INR symbol applied
+                  style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+
 
   // Filter Buttons Section
   Widget _buildFilterButtons(BuildContext context) {
@@ -122,8 +141,6 @@ class InvestorScreen extends StatelessWidget {
           _buildFilterButton(context, '1 Month', '1m'),
           _buildFilterButton(context, '1 Week', '1w'),
           _buildFilterButton(context, '1 Day', '1d'),
-
-
         ],
       ),
     );

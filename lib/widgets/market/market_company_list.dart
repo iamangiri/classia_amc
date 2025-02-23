@@ -23,7 +23,7 @@ class CompanyList extends StatelessWidget {
                 margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: isSelected ? Colors.amber : Colors.grey.shade300,
+                    color: isSelected ? Colors.grey.shade300 : Colors.grey.shade400,
                     width: isSelected ? 2 : 1, // 2px for selected, 1px for normal
                   ),
                   borderRadius: BorderRadius.circular(12),

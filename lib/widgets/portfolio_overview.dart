@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
 import '../blocs/portfolio/portfolio_state.dart';
 
 Widget buildPortfolioOverview(PortfolioLoaded state) {
@@ -8,7 +7,7 @@ Widget buildPortfolioOverview(PortfolioLoaded state) {
     margin: EdgeInsets.all(16),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(15),
-      side: BorderSide(color: Colors.grey.shade300, width: 1), // 1px border
+      side: BorderSide(color: Colors.grey.shade300, width: 1),
     ),
     elevation: 6,
     shadowColor: Colors.black26,
@@ -25,27 +24,50 @@ Widget buildPortfolioOverview(PortfolioLoaded state) {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Account Name
-          Text(
-            state.accountName,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
-          ),
-          SizedBox(height: 6),
-
-          // Managed by
-          Text(
-            "Managed by: ${state.accountManager}",
-            style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+          // Account Info with Profile Images
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundImage: NetworkImage(state.amcImage), // AMC Image
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      state.accountName,
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                    ),
+                    SizedBox(height: 4),
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 14,
+                          backgroundImage: NetworkImage(state.managerImage), // Manager Image
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          "Managed by: ${state.accountManager}",
+                          style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           Divider(thickness: 1, color: Colors.grey.shade300, height: 20),
 
-          // Jockey Point with Jockey Icon
+          // Jockey Point with Prediction Bar
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
-                  Icon(FontAwesomeIcons.horse, color: Colors.amber.shade700, size: 24), // Better icon
+                  Icon(FontAwesomeIcons.horse, color: Colors.amber.shade700, size: 22),
                   SizedBox(width: 8),
                   Text(
                     "Jockey Point: ${state.joycePoint.toStringAsFixed(1)}/10",
@@ -53,8 +75,25 @@ Widget buildPortfolioOverview(PortfolioLoaded state) {
                   ),
                 ],
               ),
-              Icon(Icons.star, color: Colors.amber[600], size: 26),
+              Row(
+                children: [
+                  Text(
+                    "${state.predictedJockeyPoint.toStringAsFixed(1)}/10",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green[700]),
+                  ),
+                  SizedBox(width: 6),
+                  Icon(Icons.trending_up, color: Colors.green, size: 22),
+                ],
+              ),
             ],
+          ),
+
+          SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: state.predictedJockeyPoint / 10,
+            backgroundColor: Colors.grey.shade300,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+            minHeight: 6,
           ),
 
           SizedBox(height: 12),
@@ -65,7 +104,7 @@ Widget buildPortfolioOverview(PortfolioLoaded state) {
             decoration: BoxDecoration(
               color: Colors.red.shade50,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.red.shade200, width: 1), // Added a subtle red border
+              border: Border.all(color: Colors.red.shade200, width: 1),
             ),
             child: Row(
               children: [

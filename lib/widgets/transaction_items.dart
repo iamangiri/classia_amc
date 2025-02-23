@@ -10,58 +10,73 @@ class TransactionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Colors.white,
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 5,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: LinearGradient(
-            colors: [Colors.white.withOpacity(0.2), Colors.white],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          border: Border.all(color: Colors.amber, width: 1.5), // Golden border
-        ),
-        child: ListTile(
-          leading: Icon(
-            transaction.type == 'investment' ? Icons.arrow_upward : Icons.arrow_downward,
-            color: transaction.type == 'investment' ? Colors.green : Colors.red,
-            size: 28,
-          ),
-          title: Text(
-            'Amount: \$${transaction.amount.toStringAsFixed(2)}',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          subtitle: Text(
-            'Date: ${transaction.date.toString()}',
-            style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-          ),
-          trailing: Container(
-            padding: EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.amber, // Golden background
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.amber.withOpacity(0.4),
-                  blurRadius: 8,
-                  spreadRadius: 2,
-                ),
-              ],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade300, width: 1.5), // 1px gray border
+      ),
+      elevation: 2, // Reduced elevation for a cleaner look
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Transaction Icon
+            CircleAvatar(
+              backgroundColor: transaction.type == 'investment'
+                  ? Colors.green.withOpacity(0.2)
+                  : Colors.red.withOpacity(0.2),
+              radius: 24,
+              child: Icon(
+                transaction.type == 'investment'
+                    ? FontAwesomeIcons.arrowUpRightDots
+                    : FontAwesomeIcons.arrowDownShortWide,
+                color: transaction.type == 'investment' ? Colors.green : Colors.red,
+                size: 22,
+              ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FaIcon(FontAwesomeIcons.horse, color: Colors.white, size: 18),
-                SizedBox(width: 6),
-                Text(
-                  'Jocey Point: ${transaction.rating}',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-              ],
+            SizedBox(width: 14),
+
+            // Transaction Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '₹${transaction.amount.toStringAsFixed(2)}', // INR Symbol
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Date: ${transaction.date.toString()}',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                  ),
+                ],
+              ),
             ),
-          ),
+
+            // Modern Jockey Point Badge
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade700,
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: Colors.amber.shade800, width: 1),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FaIcon(FontAwesomeIcons.medal, color: Colors.white, size: 18),
+                  SizedBox(width: 6),
+                  Text(
+                    '${transaction.rating} Pts',
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
