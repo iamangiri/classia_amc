@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => MainScreenBloc()),
         BlocProvider(create: (context) => MarketBloc()),
+        BlocProvider(create: (context) => PortfolioBloc()),
         BlocProvider(
           create: (context) => MarketBloc()..add(LoadMarketData()),
         ),
