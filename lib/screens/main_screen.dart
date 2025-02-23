@@ -87,9 +87,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       case 1:
         return  MarketScreen();
       case 2:
-        return  PortfolioScreen();  // Add Portfolio page here
+        return  PortfolioScreen();  
       case 3:
-        return const InvestorsPage();  // Add Investors page here
+        return  InvestorScreen();  
       default:
         return  DashboardScreen();
     }

@@ -16,9 +16,6 @@
 //   }
 // }
 
-
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -38,18 +35,20 @@ class MarketScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("Market",
-        style: TextStyle(color: AppTheme.lightTheme.scaffoldBackgroundColor)),
+            style:
+                TextStyle(color: AppTheme.lightTheme.scaffoldBackgroundColor)),
         actions: [
           IconButton(
-  icon: Icon(Icons.filter_list, color: AppTheme.lightTheme.scaffoldBackgroundColor), // Set icon color to white
-  onPressed: () {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => FilterBottomSheet(),
-    );
-  },
-),
-
+            icon: Icon(Icons.filter_list,
+                color: AppTheme.lightTheme
+                    .scaffoldBackgroundColor), // Set icon color to white
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => FilterBottomSheet(),
+              );
+            },
+          ),
         ],
         backgroundColor: AppTheme.lightTheme.primaryColor,
       ),
@@ -67,4 +66,3 @@ class MarketScreen extends StatelessWidget {
     );
   }
 }
-
