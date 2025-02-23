@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
 import '../blocs/transaction/transaction_bloc.dart';
 import '../blocs/transaction/transaction_event.dart';
 import '../blocs/transaction/transaction_state.dart';
@@ -13,29 +12,37 @@ class InvestorScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Investor Hub',
-          style: TextStyle(color: AppTheme.lightTheme.scaffoldBackgroundColor),
+        backgroundColor: AppTheme.lightTheme.primaryColor,
+        centerTitle: true, // Center the title
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.trending_up, color: Colors.white, size: 26), // Modern icon
+            SizedBox(width: 8), // Space between icon and text
+            Text(
+              'Investor Hub',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
         ),
         actions: [
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert, color: AppTheme.lightTheme.scaffoldBackgroundColor),
-            onSelected: (value) {
-              context.read<TransactionBloc>().add(FilterTransactions(filterType: value));
+          IconButton(
+            icon: Icon(Icons.filter_list, color: Colors.white),
+            onPressed: () {
+              _showFilterBottomSheet(context); // Open the filter bottom sheet
             },
-            itemBuilder: (context) => [
-              PopupMenuItem(value: 'all', child: Text('All')),
-              PopupMenuItem(value: 'investment', child: Text('Investments')),
-              PopupMenuItem(value: 'withdrawal', child: Text('Withdrawals')),
-            ],
           ),
         ],
-        backgroundColor: AppTheme.lightTheme.primaryColor,
       ),
+
       body: Column(
         children: [
           // Summary Section
-          _buildSummarySection(),
+          _buildSummarySection(context),
 
           // Filter Buttons
           _buildFilterButtons(context),
@@ -65,8 +72,65 @@ class InvestorScreen extends StatelessWidget {
     );
   }
 
+  // Show Filter Bottom Sheet
+  void _showFilterBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Filter Title
+              Text(
+                'Filter Transactions',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 16),
+
+              // Filter Options with modern UI
+              _buildFilterOption(context, 'All', 'all', Icons.all_inbox, Colors.blueAccent),
+              Divider(),
+              _buildFilterOption(context, 'Investments', 'investment', FontAwesomeIcons.arrowTrendUp, Colors.green),
+              Divider(),
+              _buildFilterOption(context, 'Withdrawals', 'withdrawal', FontAwesomeIcons.arrowTrendDown, Colors.red),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Build Filter Option with Icon and Modern Styling
+  Widget _buildFilterOption(BuildContext context, String label, String filter, IconData icon, Color iconColor) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: iconColor.withOpacity(0.2), // Light background for contrast
+        child: Icon(icon, color: iconColor),
+      ),
+      title: Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+      onTap: () {
+        context.read<TransactionBloc>().add(FilterTransactions(filterType: filter));
+        Navigator.pop(context); // Close the bottom sheet
+      },
+    );
+  }
+
   // Summary Section: Total Deposit & Withdrawal
-  Widget _buildSummarySection() {
+  Widget _buildSummarySection(BuildContext context) {
+    final state = context.watch<TransactionBloc>().state;
+    double totalDeposit = 0;
+    double totalWithdrawal = 0;
+
+    if (state is TransactionLoaded) {
+      totalDeposit = state.totalDeposit;
+      totalWithdrawal = state.totalWithdrawal;
+    }
+
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -79,8 +143,8 @@ class InvestorScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildSummaryCard('Total Deposit', '₹5000', Colors.green, FontAwesomeIcons.arrowUpRightDots),
-          _buildSummaryCard('Total Withdraw', '₹2000', Colors.red, FontAwesomeIcons.arrowDownShortWide),
+          _buildSummaryCard('Total Deposit', '₹${totalDeposit.toStringAsFixed(2)}', Colors.green, FontAwesomeIcons.arrowUpRightDots),
+          _buildSummaryCard('Total Withdraw', '₹${totalWithdrawal.toStringAsFixed(2)}', Colors.red, FontAwesomeIcons.arrowDownShortWide),
         ],
       ),
     );
@@ -128,7 +192,6 @@ class InvestorScreen extends StatelessWidget {
       ),
     );
   }
-
 
   // Filter Buttons Section
   Widget _buildFilterButtons(BuildContext context) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../blocs/portfolio/portfolio_bloc.dart';
 import '../blocs/portfolio/portfolio_event.dart';
 import '../blocs/portfolio/portfolio_state.dart';
@@ -15,25 +16,41 @@ class PortfolioScreen extends StatelessWidget {
     context.read<PortfolioBloc>().add(LoadPortfolioData());
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Portfolio", style: TextStyle(
-            color: AppTheme.lightTheme.scaffoldBackgroundColor)),
-        backgroundColor: AppTheme.lightTheme.primaryColor,
-        actions: [
-          IconButton(
-            icon: Icon(
-                Icons.add, color: AppTheme.lightTheme.scaffoldBackgroundColor),
-            onPressed: () {
-              // Navigate to the MarketScreen
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MarketScreen()),
-              );
-            },
+
+
+    appBar: AppBar(
+    backgroundColor: AppTheme.lightTheme.primaryColor,
+      centerTitle: true, // Centering title for modern alignment
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FaIcon(FontAwesomeIcons.chartLine, color: Colors.white, size: 22), // Modern portfolio icon
+          SizedBox(width: 8), // Spacing between icon and text
+          Text(
+            "Portfolio",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
           ),
         ],
       ),
-      body: BlocBuilder<PortfolioBloc, PortfolioState>(
+      actions: [
+        IconButton(
+          icon: FaIcon(FontAwesomeIcons.plus, color: Colors.white, size: 20), // Modern add icon
+          onPressed: () {
+            // Navigate to the MarketScreen
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => MarketScreen()),
+            );
+          },
+        ),
+      ],
+    ),
+
+    body: BlocBuilder<PortfolioBloc, PortfolioState>(
         builder: (context, state) {
           print("Current state: $state");
           if (state is PortfolioLoading) {

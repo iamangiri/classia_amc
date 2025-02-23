@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../blocs/market/market_bloc.dart';
 import '../blocs/market/market_event.dart';
 import '../themes/light_app_theme.dart';
@@ -14,19 +15,37 @@ class MarketScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Market", style: TextStyle(color: AppTheme.lightTheme.scaffoldBackgroundColor)),
+        backgroundColor: AppTheme.lightTheme.primaryColor,
+        centerTitle: true, // Centered for a modern layout
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FaIcon(FontAwesomeIcons.store, color: Colors.white, size: 20), // Modern market icon
+            SizedBox(width: 8), // Spacing between icon and text
+            Text(
+              "Market",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
-            icon: Icon(Icons.filter_list, color: AppTheme.lightTheme.scaffoldBackgroundColor),
+            icon: FaIcon(FontAwesomeIcons.filter, color: Colors.white, size: 18), // Modern filter icon
             onPressed: () {
               showModalBottomSheet(
                 context: context,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)), // Smooth curve
+                ),
                 builder: (context) => FilterBottomSheet(),
               );
             },
           ),
         ],
-        backgroundColor: AppTheme.lightTheme.primaryColor,
       ),
       body: Column(
         children: [

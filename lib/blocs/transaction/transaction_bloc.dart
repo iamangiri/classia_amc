@@ -1,10 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../models/transaction_model.dart';
 import 'transaction_event.dart';
 import 'transaction_state.dart';
 
 class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
+  List<Transaction> _allTransactions = []; // Store the original list of transactions
+
   TransactionBloc() : super(TransactionLoading()) {
     on<LoadTransactions>(_onLoadTransactions);
     on<FilterTransactions>(_onFilterTransactions);
@@ -13,7 +14,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   void _onLoadTransactions(LoadTransactions event, Emitter<TransactionState> emit) async {
     // Simulate loading transactions from an API
     await Future.delayed(Duration(seconds: 2));
-    final transactions = [
+    _allTransactions = [
       Transaction(
         id: '1',
         date: DateTime.now(),
@@ -51,25 +52,25 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       ),
       // Add more transactions as needed
     ];
-    emit(TransactionLoaded(transactions: transactions));
+    emit(TransactionLoaded(transactions: _allTransactions));
   }
 
   void _onFilterTransactions(FilterTransactions event, Emitter<TransactionState> emit) {
     final state = this.state as TransactionLoaded;
-    List<Transaction> filteredTransactions = state.transactions;
+    List<Transaction> filteredTransactions = _allTransactions; // Use the original list
 
     if (event.filterType == 'investment' || event.filterType == 'withdrawal') {
-      filteredTransactions = state.transactions.where((t) => t.type == event.filterType).toList();
+      filteredTransactions = _allTransactions.where((t) => t.type == event.filterType).toList();
     } else if (event.filterType == '1d') {
-      filteredTransactions = state.transactions
+      filteredTransactions = _allTransactions
           .where((t) => t.date.isAfter(DateTime.now().subtract(Duration(days: 1))))
           .toList();
     } else if (event.filterType == '1w') {
-      filteredTransactions = state.transactions
+      filteredTransactions = _allTransactions
           .where((t) => t.date.isAfter(DateTime.now().subtract(Duration(days: 7))))
           .toList();
     } else if (event.filterType == '1m') {
-      filteredTransactions = state.transactions
+      filteredTransactions = _allTransactions
           .where((t) => t.date.isAfter(DateTime.now().subtract(Duration(days: 30))))
           .toList();
     }
