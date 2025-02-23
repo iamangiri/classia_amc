@@ -13,7 +13,7 @@ class InvestorScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Investor Screen',
+          'Investor Hub',
           style: TextStyle(color: AppTheme.lightTheme.scaffoldBackgroundColor),
         ),
         actions: [
@@ -118,9 +118,12 @@ class InvestorScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildFilterButton(context, '1 Day', '1d'),
-          _buildFilterButton(context, '1 Week', '1w'),
+          _buildFilterButton(context, 'All', 'all'),
           _buildFilterButton(context, '1 Month', '1m'),
+          _buildFilterButton(context, '1 Week', '1w'),
+          _buildFilterButton(context, '1 Day', '1d'),
+
+
         ],
       ),
     );

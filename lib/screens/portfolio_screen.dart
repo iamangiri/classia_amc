@@ -3,16 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/portfolio/portfolio_bloc.dart';
 import '../blocs/portfolio/portfolio_event.dart';
 import '../blocs/portfolio/portfolio_state.dart';
+import '../themes/light_app_theme.dart';
 
 class PortfolioScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Portfolio"),
+        title: Text("Portfolio", style: TextStyle(color: AppTheme.lightTheme.scaffoldBackgroundColor)),
+        backgroundColor: AppTheme.lightTheme.primaryColor,
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(Icons.add, color: AppTheme.lightTheme.scaffoldBackgroundColor),
             onPressed: () {
               // Navigate to a screen to add companies
             },
@@ -27,7 +29,7 @@ class PortfolioScreen extends StatelessWidget {
             return SingleChildScrollView(
               child: Column(
                 children: [
-                  _buildAccountDetails(state),
+                  _buildPortfolioOverview(state),
                   _buildNAVCard(state.currentNAV),
                   _buildCompanyList(state.companies),
                 ],
@@ -41,17 +43,30 @@ class PortfolioScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAccountDetails(PortfolioLoaded state) {
+  Widget _buildPortfolioOverview(PortfolioLoaded state) {
     return Card(
       margin: EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 4,
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Account Name: ${state.accountName}", style: TextStyle(fontSize: 18)),
+            Text(" ${state.accountName}",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
-            Text("Account Manager: ${state.accountManager}", style: TextStyle(fontSize: 16)),
+            Text("Managed by: ${state.accountManager}",
+                style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+            SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Jockey Point: ${state.joycePoint.toStringAsFixed(1)}/10",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.blueAccent)),
+                Icon(Icons.star, color: Colors.orangeAccent, size: 24),
+              ],
+            ),
           ],
         ),
       ),
@@ -61,13 +76,16 @@ class PortfolioScreen extends StatelessWidget {
   Widget _buildNAVCard(double currentNAV) {
     return Card(
       margin: EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 4,
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
-            Text("Current NAV", style: TextStyle(fontSize: 18)),
+            Text("Current NAV", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             SizedBox(height: 8),
-            Text("\$${currentNAV.toStringAsFixed(2)}", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text("\$${currentNAV.toStringAsFixed(2)}",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green)),
           ],
         ),
       ),
@@ -81,14 +99,19 @@ class PortfolioScreen extends StatelessWidget {
       itemCount: companies.length,
       itemBuilder: (context, index) {
         final company = companies[index];
-        return ListTile(
-          title: Text(company["name"]),
-          subtitle: Text("${company["symbol"]} - NAV Contribution: \$${company["navContribution"].toStringAsFixed(2)}"),
-          trailing: IconButton(
-            icon: Icon(Icons.remove),
-            onPressed: () {
-              context.read<PortfolioBloc>().add(RemoveCompanyFromPortfolio(company["id"]));
-            },
+        return Card(
+          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 3,
+          child: ListTile(
+            title: Text(company["name"], style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text("${company["symbol"]} - NAV Contribution: \$${company["navContribution"].toStringAsFixed(2)}"),
+            trailing: IconButton(
+              icon: Icon(Icons.remove, color: Colors.redAccent),
+              onPressed: () {
+                context.read<PortfolioBloc>().add(RemoveCompanyFromPortfolio(company["id"]));
+              },
+            ),
           ),
         );
       },

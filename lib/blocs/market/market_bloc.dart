@@ -28,7 +28,7 @@ class MarketBloc extends Bloc<MarketEvent, MarketState> {
 ];
 
 
-    emit(MarketLoaded(companies: companies, selectedCompanies: []));
+    emit(MarketLoaded(companies: companies, selectedCompanies: [], originalCompanies: []));
   }
 
   void _onSearchCompany(SearchCompany event, Emitter<MarketState> emit) {

@@ -14,13 +14,13 @@ class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
     // Simulate API call to fetch portfolio data
     await Future.delayed(Duration(seconds: 2));
     emit(PortfolioLoaded(
-      accountName: "John Doe",
-      accountManager: "Jane Smith",
+      accountName: "ICICI Prudential Mutual Fund",
+      accountManager: "Aman Giri",
       currentNAV: 1500000.0,
       companies: [
         {"id": "1", "name": "Reliance Industries", "symbol": "RELIANCE", "navContribution": 500000.0},
         {"id": "2", "name": "Tata Motors", "symbol": "TATAMOTORS", "navContribution": 300000.0},
-      ],
+      ], joycePoint: 3.4,
     ));
   }
 
