@@ -2,6 +2,7 @@ import 'package:classia_amc/blocs/portfolio/portfolio_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'blocs/main_screen/main_screen_bloc.dart';
+import 'blocs/market/database_service.dart';
 import 'blocs/market/market_bloc.dart';
 import 'blocs/market/market_event.dart';
 import 'blocs/portfolio/portfolio_bloc.dart';
@@ -9,7 +10,10 @@ import 'blocs/transaction/transaction_bloc.dart';
 import 'blocs/transaction/transaction_event.dart';
 import 'routes/app_router.dart';
 import 'themes/light_app_theme.dart';
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final DatabaseService databaseService = DatabaseService();
+  await databaseService.database;
   runApp(const MyApp());
 }
 

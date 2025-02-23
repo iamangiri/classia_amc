@@ -105,7 +105,7 @@ class PortfolioScreen extends StatelessWidget {
           elevation: 3,
           child: ListTile(
             title: Text(company["name"], style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text("${company["symbol"]} - NAV Contribution: \$${company["navContribution"].toStringAsFixed(2)}"),
+            subtitle: Text("${company["symbol"]} - Exchange: ${company["exchange"]}"),
             trailing: IconButton(
               icon: Icon(Icons.remove, color: Colors.redAccent),
               onPressed: () {
