@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 import '../screens/main_screen.dart';
+import '../screens/market_screen.dart';
 import '../screens/onboarding_screen.dart';
+import '../screens/portfolio_screen.dart';
 import '../screens/splash_screen.dart';
 
 
@@ -19,6 +21,16 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/main',
       builder: (context, state) => const MainScreen(),
+    ),
+
+    GoRoute(
+      path: '/market',
+      builder: (context, state) => MarketScreen(),
+    ),
+
+    GoRoute(
+      path: '/portfolio',
+      builder: (context, state) => PortfolioScreen(),
     ),
 
   ],
