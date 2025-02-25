@@ -9,6 +9,7 @@ import '../blocs/home/home_state.dart';
 import '../widgets/home_assets_graph.dart';
 import '../widgets/home_overview.dart';
 import '../widgets/home_recent_activity.dart';
+import '../widgets/home_show_prediction_dilog.dart';
 import '../widgets/home_slider.dart';
 import 'profile_screen.dart';
 
@@ -16,46 +17,35 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: AppTheme.lightTheme.primaryColor,
-          centerTitle: true, // Centers the title for a modern look
-          leading: IconButton(
-            icon: FaIcon(FontAwesomeIcons.userCircle, color: Colors.white, size: 22), // Profile Icon on the left
+      appBar: AppBar(
+        backgroundColor: AppTheme.lightTheme.primaryColor,
+        centerTitle: true,
+        leading: IconButton(
+          icon: FaIcon(FontAwesomeIcons.userCircle, color: Colors.white, size: 22),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProfileScreen()),
+            );
+          },
+        ),
+        title: Text(
+          "Dashboard",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: FaIcon(FontAwesomeIcons.bell, color: Colors.white, size: 22),
             onPressed: () {
-              // Navigate to Profile Screen
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileScreen()), // Replace with actual profile screen
-              );
+              // Handle notification button press
             },
           ),
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-
-              Text(
-                "Dashboard",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: FaIcon(FontAwesomeIcons.bell, color: Colors.white, size: 22), // Notification Icon on the right
-              onPressed: () {
-                // // Navigate to Notifications Screen
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => NotificationScreen()), // Replace with actual notifications screen
-                // );
-              },
-            ),
-          ],
-        ),
+        ],
+      ),
       body: BlocProvider(
         create: (context) => DashboardBloc()..add(LoadDashboardData()),
         child: BlocBuilder<DashboardBloc, DashboardState>(
@@ -85,6 +75,25 @@ class DashboardScreen extends StatelessWidget {
                 ],
               };
 
+              // Mock data for recent predictions
+              final predictions = [
+                {
+                  'date': '2024-01-01',
+                  'predictedPoints': '100',
+                  'achievedPoints': '95',
+                },
+                {
+                  'date': '2024-01-02',
+                  'predictedPoints': '120',
+                  'achievedPoints': '110',
+                },
+                {
+                  'date': '2024-01-03',
+                  'predictedPoints': '90',
+                  'achievedPoints': '85',
+                },
+              ];
+
               return SingleChildScrollView(
                 child: Column(
                   children: [
@@ -94,7 +103,7 @@ class DashboardScreen extends StatelessWidget {
                       data: graphData,
                       selectedFilter: '1 Month', // Default filter
                     ),
-                    buildRecentActivities(state.recentActivities),
+                    buildRecentPredictions(predictions), // Updated section
                   ],
                 ),
               );
@@ -103,6 +112,13 @@ class DashboardScreen extends StatelessWidget {
             }
           },
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showAddPredictionDialog(context); // Show the popup form
+        },
+        child: Icon(Icons.add, color: Colors.white),
+        backgroundColor: AppTheme.lightTheme.primaryColor, // Use theme color
       ),
     );
   }
