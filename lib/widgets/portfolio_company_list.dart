@@ -12,14 +12,16 @@ Widget buildCompanyList(List<Map<String, dynamic>> companies) {
     itemCount: companies.length,
     itemBuilder: (context, index) {
       final company = companies[index];
+      final int quantity = company["quantity"] ?? 1; // Default to 1 if null
+
       return Container(
         margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300, width: 1), // 1px border outside
+          border: Border.all(color: Colors.grey.shade300, width: 1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Card(
-          elevation: 3, // Light elevation for a modern look
+          elevation: 3,
           shadowColor: Colors.black12,
           color: Colors.white,
           shape: RoundedRectangleBorder(
@@ -39,18 +41,49 @@ Widget buildCompanyList(List<Map<String, dynamic>> companies) {
               "${company["symbol"]} - Exchange: ${company["exchange"]}",
               style: TextStyle(fontSize: 14, color: Colors.grey[700]),
             ),
-            trailing: GestureDetector(
-              onTap: () {
-                context.read<PortfolioBloc>().add(RemoveCompanyFromPortfolio(company["id"]));
-              },
-              child: Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.redAccent, width: 1),
+
+            // ✅ Add increment & decrement buttons
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 🔻 Decrease Button
+                GestureDetector(
+                  onTap: () {
+                    context.read<PortfolioBloc>().add(DecreaseCompanyQuantity(company["id"]));
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.redAccent, width: 1),
+                    ),
+                    child: Icon(Icons.remove, color: Colors.redAccent, size: 20),
+                  ),
                 ),
-                child: Icon(Icons.remove, color: Colors.redAccent, size: 20),
-              ),
+                SizedBox(width: 10),
+
+                // 🔹 Quantity Display
+                Text(
+                  quantity.toString(),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black),
+                ),
+                SizedBox(width: 10),
+
+                // 🔺 Increase Button
+                GestureDetector(
+                  onTap: () {
+                    context.read<PortfolioBloc>().add(IncreaseCompanyQuantity(company["id"]));
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.green, width: 1),
+                    ),
+                    child: Icon(Icons.add, color: Colors.green, size: 20),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

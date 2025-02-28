@@ -31,23 +31,97 @@ class DatabaseService {
         id TEXT PRIMARY KEY,
         name TEXT,
         symbol TEXT,
-        exchange TEXT
+        exchange TEXT,
+        quantity INTEGER DEFAULT 1 -- Added quantity column
       )
     ''');
   }
 
-  Future<void> insertCompany(Map<String, dynamic> company) async {
+  // ✅ Insert a company or update quantity if it exists
+  Future<void> insertOrUpdateCompany(Map<String, dynamic> company) async {
     final db = await database;
-    await db.insert('selected_companies', company, conflictAlgorithm: ConflictAlgorithm.replace);
+    final existing = await db.query(
+      'selected_companies',
+      where: 'id = ?',
+      whereArgs: [company['id']],
+    );
+
+    if (existing.isNotEmpty) {
+      int newQuantity = (existing.first['quantity'] as int) + 1;
+      await db.update(
+        'selected_companies',
+        {'quantity': newQuantity},
+        where: 'id = ?',
+        whereArgs: [company['id']],
+      );
+    } else {
+      company['quantity'] = 1;
+      await db.insert(
+        'selected_companies',
+        company,
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
   }
 
+  // ✅ Remove company or decrease quantity
   Future<void> deleteCompany(String id) async {
     final db = await database;
-    await db.delete('selected_companies', where: 'id = ?', whereArgs: [id]);
+    final existing = await db.query(
+      'selected_companies',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (existing.isNotEmpty) {
+      int currentQuantity = existing.first['quantity'] as int;
+
+      if (currentQuantity > 1) {
+        await db.update(
+          'selected_companies',
+          {'quantity': currentQuantity - 1},
+          where: 'id = ?',
+          whereArgs: [id],
+        );
+      } else {
+        await db.delete(
+          'selected_companies',
+          where: 'id = ?',
+          whereArgs: [id],
+        );
+      }
+    }
   }
 
+  // ✅ Get list of selected companies
   Future<List<Map<String, dynamic>>> getSelectedCompanies() async {
     final db = await database;
     return await db.query('selected_companies');
+  }
+
+  // ✅ Update quantity directly
+  Future<void> updateCompanyQuantity(String id, int change) async {
+    final db = await database;
+    final existing = await db.query(
+      'selected_companies',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (existing.isNotEmpty) {
+      int currentQuantity = existing.first['quantity'] as int;
+      int newQuantity = currentQuantity + change;
+
+      if (newQuantity > 0) {
+        await db.update(
+          'selected_companies',
+          {'quantity': newQuantity},
+          where: 'id = ?',
+          whereArgs: [id],
+        );
+      } else {
+        await deleteCompany(id); // Remove if quantity reaches 0
+      }
+    }
   }
 }

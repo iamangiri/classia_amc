@@ -7,13 +7,15 @@ abstract class PortfolioState extends Equatable {
   List<Object?> get props => [];
 }
 
+// State when portfolio is being loaded
 class PortfolioLoading extends PortfolioState {}
 
+// State when portfolio data is successfully loaded
 class PortfolioLoaded extends PortfolioState {
   final String accountName;
   final String accountManager;
-  final String amcImage; // AMC Logo Image
-  final String managerImage; // Manager Profile Image
+  final String amcImage;
+  final String managerImage;
   final double currentNAV;
   final List<Map<String, dynamic>> companies;
   final double joycePoint;
@@ -30,7 +32,7 @@ class PortfolioLoaded extends PortfolioState {
     required this.predictedJockeyPoint,
   });
 
-  // Updated copyWith method to include new fields
+  // Creates a copy of the state with updated values
   PortfolioLoaded copyWith({
     String? accountName,
     String? accountManager,

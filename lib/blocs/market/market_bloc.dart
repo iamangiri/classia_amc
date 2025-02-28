@@ -68,7 +68,7 @@ class MarketBloc extends Bloc<MarketEvent, MarketState> {
       await _databaseService.deleteCompany(event.companyId);
     } else {
       selectedCompanies.add(event.companyId);
-      await _databaseService.insertCompany(company);
+      await _databaseService.insertOrUpdateCompany(company);
     }
 
     emit(state.copyWith(selectedCompanies: selectedCompanies));
