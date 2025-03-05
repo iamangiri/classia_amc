@@ -17,6 +17,7 @@ class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
   }
 
   // 📌 Load Portfolio Data
+// 📌 Load Portfolio Data
   void _onLoadPortfolioData(LoadPortfolioData event, Emitter<PortfolioState> emit) async {
     emit(PortfolioLoading());
     final companies = await _databaseService.getSelectedCompanies();
@@ -24,21 +25,29 @@ class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
     // Fetch real-time prices for all companies
     final updatedCompanies = await _updateCompanyPrices(companies);
 
-    double predictedJockeyPoint = _calculatePredictedJockeyPoint(companies.length);
+    // Calculate NAV
+    double currentNAV = _calculateNAV(updatedCompanies);
+
+    // Calculate Unit Price
+    double unitPrice = _calculateUnitValue(currentNAV);
+
+    // Calculate Predicted Jockey Point
+    double predictedJockeyPoint = _calculatePredictedJockeyPoint(updatedCompanies.length);
 
     emit(PortfolioLoaded(
       accountName: "ICICI Prudential Mutual Fund",
       accountManager: "Aman Giri",
-      amcImage: "https://sampleimageurl.com",
-      managerImage: "https://sampleimageurl.com",
-      currentNAV: _calculateNAV(updatedCompanies),
-      unit : 0,
+      amcImage: "https://upload.wikimedia.org/wikipedia/en/thumb/4/44/ICICI_Prudential_Mutual_Fund_Logo.svg/2560px-ICICI_Prudential_Mutual_Fund_Logo.svg.png",
+      managerImage: "https://www.icicipruamc.com/content/dam/icici-prudential-website/about-us/leadership/Amit_Ganatra.jpg",
+      currentNAV: currentNAV,
+      unit: unitPrice,  // ✅ Unit price is now updated when screen opens
       companies: updatedCompanies,
       joycePoint: 3.4,
       predictedJockeyPoint: predictedJockeyPoint,
-
     ));
+
   }
+
 
 
   // 📌 Update company prices using Alpha Vantage

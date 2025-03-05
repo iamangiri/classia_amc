@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'market_company_list.dart';
 import 'market_event.dart';
 import 'market_state.dart';
 import 'database_service.dart';
@@ -17,26 +18,15 @@ class MarketBloc extends Bloc<MarketEvent, MarketState> {
     emit(MarketLoading());
 
     await Future.delayed(Duration(seconds: 2)); // Simulate API delay
-    final companies = [
-      {"id": "1", "name": "Reliance Industries", "symbol": "RELIANCE", "exchange": "NSE"},
-      {"id": "2", "name": "Tata Motors", "symbol": "TATAMOTORS", "exchange": "NSE"},
-      {"id": "3", "name": "Infosys", "symbol": "INFY", "exchange": "BSE"},
-      {"id": "4", "name": "HDFC Bank", "symbol": "HDFCBANK", "exchange": "NSE"},
-      {"id": "5", "name": "ICICI Bank", "symbol": "ICICIBANK", "exchange": "BSE"},
-      {"id": "6", "name": "Larsen & Toubro", "symbol": "LT", "exchange": "NSE"},
-      {"id": "7", "name": "State Bank of India", "symbol": "SBIN", "exchange": "BSE"},
-      {"id": "8", "name": "Bharti Airtel", "symbol": "BHARTIARTL", "exchange": "NSE"},
-      {"id": "9", "name": "Maruti Suzuki", "symbol": "MARUTI", "exchange": "BSE"},
-      {"id": "10", "name": "Wipro", "symbol": "WIPRO", "exchange": "NSE"},
-    ];
+
 
     final selectedCompanies = await _databaseService.getSelectedCompanies();
     final selectedIds = selectedCompanies.map((c) => c["id"] as String).toList();
 
     emit(MarketLoaded(
-      companies: companies,
+      companies: MarketCompany.companies,
       selectedCompanies: selectedIds,
-      originalCompanies: companies,
+      originalCompanies: MarketCompany.companies,
     ));
   }
 

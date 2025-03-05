@@ -6,6 +6,7 @@ import '../blocs/main_screen/main_screen_bloc.dart';
 import '../blocs/main_screen/main_screen_event.dart';
 import '../blocs/main_screen/main_screen_state.dart';
 import '../service/local_auth_service.dart';
+import '../themes/light_app_theme.dart';
 import 'home_screen.dart';
 import 'invester_screen.dart';
 import 'market_screen.dart';
@@ -86,10 +87,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               color: Colors.black,
               fontWeight: FontWeight.w500,
             ),
-            tabIconColor: Colors.blue[600],
+            tabIconColor: AppTheme.lightTheme.primaryColor,
             tabIconSize: 28.0,
             tabIconSelectedSize: 26.0,
-            tabSelectedColor: Colors.blue[900],
+            tabSelectedColor: AppTheme.lightTheme.primaryColor,
             tabIconSelectedColor: Colors.white,
             tabBarColor: Colors.white,
             onTabItemSelected: (int value) {

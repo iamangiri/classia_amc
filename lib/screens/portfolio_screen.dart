@@ -8,7 +8,7 @@ import '../themes/light_app_theme.dart';
 import '../widgets/portfolio_company_list.dart';
 import '../widgets/portfolio_nav_section.dart';
 import '../widgets/portfolio_overview.dart';
-import 'market_screen.dart'; // Import the MarketScreen
+import 'market_screen.dart';
 
 class PortfolioScreen extends StatelessWidget {
   @override
