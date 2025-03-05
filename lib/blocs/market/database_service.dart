@@ -55,10 +55,17 @@ class DatabaseService {
         whereArgs: [company['id']],
       );
     } else {
-      company['quantity'] = 1;
+      // Ensure all fields are of the correct type
+      Map<String, dynamic> companyToInsert = {
+        'id': company['id'].toString(), // Ensure id is String
+        'name': company['name'].toString(), // Ensure name is String
+        'symbol': company['symbol'].toString(), // Ensure symbol is String
+        'exchange': company['exchange'].toString(), // Ensure exchange is String
+        'quantity': 1, // quantity is int
+      };
       await db.insert(
         'selected_companies',
-        company,
+        companyToInsert,
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }

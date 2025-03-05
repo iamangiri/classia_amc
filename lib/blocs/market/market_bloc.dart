@@ -68,7 +68,14 @@ class MarketBloc extends Bloc<MarketEvent, MarketState> {
       await _databaseService.deleteCompany(event.companyId);
     } else {
       selectedCompanies.add(event.companyId);
-      await _databaseService.insertOrUpdateCompany(company);
+      // Ensure the company map has the correct types
+      Map<String, dynamic> companyToInsert = {
+        'id': company['id'].toString(),
+        'name': company['name'].toString(),
+        'symbol': company['symbol'].toString(),
+        'exchange': company['exchange'].toString(),
+      };
+      await _databaseService.insertOrUpdateCompany(companyToInsert);
     }
 
     emit(state.copyWith(selectedCompanies: selectedCompanies));
