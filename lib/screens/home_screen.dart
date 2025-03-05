@@ -12,6 +12,7 @@ import '../widgets/home_recent_activity.dart';
 import '../widgets/home_show_prediction_dilog.dart';
 import '../widgets/home_slider.dart';
 import 'profile_screen.dart';
+import 'userprofile/notification_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   @override
@@ -42,6 +43,7 @@ class DashboardScreen extends StatelessWidget {
             icon: FaIcon(FontAwesomeIcons.bell, color: Colors.white, size: 22),
             onPressed: () {
               // Handle notification button press
+              Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationScreen()));
             },
           ),
         ],

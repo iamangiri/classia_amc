@@ -1,7 +1,12 @@
+import 'package:classia_amc/screens/invester_screen.dart';
+import 'package:classia_amc/screens/portfolio_screen.dart';
+import 'package:classia_amc/screens/userprofile/notification_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../themes/light_app_theme.dart';
+import 'splash_screen.dart';
+import 'userprofile/customer_support_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -27,13 +32,27 @@ class ProfileScreen extends StatelessWidget {
             SizedBox(height: 20),
 
             // Account Options
-            _buildOptionTile(context, "My Portfolio", FontAwesomeIcons.chartLine, () {}),
-            _buildOptionTile(context, "Transaction History", FontAwesomeIcons.clockRotateLeft, () {}),
-            _buildOptionTile(context, "Security Settings", FontAwesomeIcons.shieldHalved, () {}),
-            _buildOptionTile(context, "Notifications", FontAwesomeIcons.bell, () {}),
-            _buildOptionTile(context, "Customer Support", FontAwesomeIcons.headset, () {}),
-            _buildOptionTile(context, "About Us", FontAwesomeIcons.infoCircle, () {}),
-            _buildOptionTile(context, "Refer & Earn", FontAwesomeIcons.gift, () {}),
+            _buildOptionTile(context, "My Portfolio", FontAwesomeIcons.chartLine, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => PortfolioScreen()));
+            }),
+            _buildOptionTile(context, "Transaction History", FontAwesomeIcons.clockRotateLeft, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => InvestorScreen()));
+            }),
+            _buildOptionTile(context, "Security Settings", FontAwesomeIcons.shieldHalved, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => InvestorScreen()));
+            }),
+            _buildOptionTile(context, "Notifications", FontAwesomeIcons.bell, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationScreen()));
+            }),
+            _buildOptionTile(context, "Customer Support", FontAwesomeIcons.headset, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => CustomerSupportScreen()));
+            }),
+            _buildOptionTile(context, "About Us", FontAwesomeIcons.infoCircle, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => InvestorScreen()));
+            }),
+            _buildOptionTile(context, "Refer & Earn", FontAwesomeIcons.gift, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => InvestorScreen()));
+            }),
             _buildOptionTile(context, "Logout", FontAwesomeIcons.signOutAlt, () {
               _showLogoutDialog(context);
             }),
@@ -150,6 +169,7 @@ class ProfileScreen extends StatelessWidget {
             onPressed: () {
               Navigator.pop(context);
               // Handle Logout Logic
+              Navigator.push(context, MaterialPageRoute(builder: (context) => SplashScreen()));
             },
             child: Text("Logout", style: TextStyle(color: Colors.red)),
           ),
