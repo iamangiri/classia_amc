@@ -17,6 +17,7 @@ class PortfolioLoaded extends PortfolioState {
   final String amcImage;
   final String managerImage;
   final double currentNAV;
+  final double unit;
   final List<Map<String, dynamic>> companies;
   final double joycePoint;
   final double predictedJockeyPoint;
@@ -27,6 +28,7 @@ class PortfolioLoaded extends PortfolioState {
     required this.amcImage,
     required this.managerImage,
     required this.currentNAV,
+    required this.unit,
     required this.companies,
     required this.joycePoint,
     required this.predictedJockeyPoint,
@@ -39,6 +41,7 @@ class PortfolioLoaded extends PortfolioState {
     String? amcImage,
     String? managerImage,
     double? currentNAV,
+    double? unit, // Corrected from String? to double?
     List<Map<String, dynamic>>? companies,
     double? joycePoint,
     double? predictedJockeyPoint,
@@ -49,6 +52,7 @@ class PortfolioLoaded extends PortfolioState {
       amcImage: amcImage ?? this.amcImage,
       managerImage: managerImage ?? this.managerImage,
       currentNAV: currentNAV ?? this.currentNAV,
+      unit: unit ?? this.unit, // Fixed type
       companies: companies ?? this.companies,
       joycePoint: joycePoint ?? this.joycePoint,
       predictedJockeyPoint: predictedJockeyPoint ?? this.predictedJockeyPoint,
@@ -62,6 +66,7 @@ class PortfolioLoaded extends PortfolioState {
     amcImage,
     managerImage,
     currentNAV,
+    unit,
     companies,
     joycePoint,
     predictedJockeyPoint,

@@ -60,7 +60,7 @@ class PortfolioScreen extends StatelessWidget {
               child: Column(
                 children: [
                   buildPortfolioOverview(state),
-                  buildNAVSection(state.currentNAV, 44444),
+                  buildNAVSection(state.currentNAV, state.unit),
                   buildCompanyList(state.companies),
                 ],
               ),

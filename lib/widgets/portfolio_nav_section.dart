@@ -6,7 +6,7 @@ Widget buildNAVSection(double currentNAV, double lotValue) {
     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
     children: [
       _buildCard("Current NAV", currentNAV, Colors.green, FontAwesomeIcons.chartLine),
-      _buildCard("Lot Value", lotValue, Colors.blue, FontAwesomeIcons.wallet),
+      _buildCard("Unit Value", lotValue, Colors.blue, FontAwesomeIcons.wallet),
     ],
   );
 }
