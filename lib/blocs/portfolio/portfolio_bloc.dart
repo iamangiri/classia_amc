@@ -32,7 +32,7 @@ class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
       amcImage: "https://sampleimageurl.com",
       managerImage: "https://sampleimageurl.com",
       currentNAV: _calculateNAV(updatedCompanies),
-      unit : 123,
+      unit : 0,
       companies: updatedCompanies,
       joycePoint: 3.4,
       predictedJockeyPoint: predictedJockeyPoint,

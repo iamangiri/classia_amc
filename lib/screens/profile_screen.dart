@@ -3,7 +3,6 @@ import 'package:classia_amc/screens/portfolio_screen.dart';
 import 'package:classia_amc/screens/userprofile/notification_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
 import '../themes/light_app_theme.dart';
 import 'splash_screen.dart';
 import 'userprofile/aboutus_screen.dart';
@@ -34,9 +33,10 @@ class ProfileScreen extends StatelessWidget {
 
             SizedBox(height: 20),
 
-            _buildOptionTile(context, "Edit Profile", FontAwesomeIcons.gift, () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
-            }),
+          _buildOptionTile(context, "Edit Profile", FontAwesomeIcons.userEdit, () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
+          }),
+
             // Account Options
             _buildOptionTile(context, "My Portfolio", FontAwesomeIcons.chartLine, () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => PortfolioScreen()));
@@ -129,14 +129,14 @@ class ProfileScreen extends StatelessWidget {
 
           // User Name
           Text(
-            "John Doe",
+            "Aman Giri",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           SizedBox(height: 4),
 
           // Email
           Text(
-            "john.doe@example.com",
+            "aman@classia.com",
             style: TextStyle(fontSize: 14, color: Colors.white70),
           ),
         ],
