@@ -6,7 +6,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../themes/light_app_theme.dart';
 import 'splash_screen.dart';
+import 'userprofile/aboutus_screen.dart';
 import 'userprofile/customer_support_screen.dart';
+import 'userprofile/profile_edit_screen.dart';
+import 'userprofile/setting_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -31,6 +34,9 @@ class ProfileScreen extends StatelessWidget {
 
             SizedBox(height: 20),
 
+            _buildOptionTile(context, "Edit Profile", FontAwesomeIcons.gift, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
+            }),
             // Account Options
             _buildOptionTile(context, "My Portfolio", FontAwesomeIcons.chartLine, () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => PortfolioScreen()));
@@ -39,7 +45,7 @@ class ProfileScreen extends StatelessWidget {
               Navigator.push(context, MaterialPageRoute(builder: (context) => InvestorScreen()));
             }),
             _buildOptionTile(context, "Security Settings", FontAwesomeIcons.shieldHalved, () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => InvestorScreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()));
             }),
             _buildOptionTile(context, "Notifications", FontAwesomeIcons.bell, () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationScreen()));
@@ -48,10 +54,7 @@ class ProfileScreen extends StatelessWidget {
               Navigator.push(context, MaterialPageRoute(builder: (context) => CustomerSupportScreen()));
             }),
             _buildOptionTile(context, "About Us", FontAwesomeIcons.infoCircle, () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => InvestorScreen()));
-            }),
-            _buildOptionTile(context, "Refer & Earn", FontAwesomeIcons.gift, () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => InvestorScreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AboutUsScreen()));
             }),
             _buildOptionTile(context, "Logout", FontAwesomeIcons.signOutAlt, () {
               _showLogoutDialog(context);
