@@ -67,7 +67,7 @@ class DashboardScreen extends StatelessWidget {
                   FlSpot(2, 1550),
                   FlSpot(3, 1700),
                 ],
-                'lotValue': [
+                'unitValue': [
                   FlSpot(0, 1500),
                   FlSpot(1, 1400),
                   FlSpot(2, 1450),
@@ -98,7 +98,7 @@ class DashboardScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     buildSlider(state.sliderImages),
-                    buildOverview(state.totalAssets, state.nav, state.lotValue),
+                    buildOverview(state.totalAssets, state.nav, state.unitValue),
                     AssetGraph(
                       data: graphData,
                       selectedFilter: '1 Month', // Default filter

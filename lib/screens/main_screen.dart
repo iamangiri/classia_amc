@@ -5,11 +5,11 @@ import 'package:motion_tab_bar/MotionTabBarController.dart';
 import '../blocs/main_screen/main_screen_bloc.dart';
 import '../blocs/main_screen/main_screen_event.dart';
 import '../blocs/main_screen/main_screen_state.dart';
+import '../service/local_auth_service.dart';
 import 'home_screen.dart';
 import 'invester_screen.dart';
 import 'market_screen.dart';
 import 'portfolio_screen.dart';
-import 'profile_screen.dart';  // Add Investors screen
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -20,15 +20,18 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   late MotionTabBarController _motionTabBarController;
+  final LocalAuthService _localAuthService = LocalAuthService();
+  bool isAuthenticating = true;
 
   @override
   void initState() {
     super.initState();
     _motionTabBarController = MotionTabBarController(
       initialIndex: 0,
-      length: 4,  // Update length to 4
+      length: 4,
       vsync: this,
     );
+    _authenticateUser();
   }
 
   @override
@@ -37,8 +40,30 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+
+
+  Future<void> _authenticateUser() async {
+    bool isAuthenticated = await _localAuthService.authenticate();
+
+    if (!isAuthenticated) {
+      Navigator.pop(context);
+      return;
+    }
+
+    setState(() {
+      isAuthenticating = false;
+    });
+
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
+    if (isAuthenticating) {
+      return _buildAuthLoadingScreen();
+    }
+
     return BlocBuilder<MainScreenBloc, MainScreenState>(
       builder: (context, state) {
         int selectedIndex = state is TabChangedState ? state.tabIndex : 0;
@@ -46,14 +71,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         return Scaffold(
           bottomNavigationBar: MotionTabBar(
             controller: _motionTabBarController,
-            initialSelectedTab: ["Home", "Market", "Portfolio", "Investors"][selectedIndex], // Updated
-            labels: const ["Home", "Market", "Portfolio", "Investors"],  // Updated
+            initialSelectedTab: ["Home", "Market", "Portfolio", "Investors"][selectedIndex],
+            labels: const ["Home", "Market", "Portfolio", "Investors"],
             icons: const [
-              Icons.home,          
-              Icons.trending_up,   
-              Icons.work,          
-              Icons.account_balance_wallet, 
-            ], 
+              Icons.home,
+              Icons.trending_up,
+              Icons.work,
+              Icons.account_balance_wallet,
+            ],
             tabSize: 50,
             tabBarHeight: 55,
             textStyle: const TextStyle(
@@ -80,18 +105,35 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
+
+  Widget _buildAuthLoadingScreen() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.fingerprint, size: 100, color:Colors.black54),
+            SizedBox(height: 10),
+            Text("Authenticating...", style: TextStyle(fontSize: 18, color: Colors.white70)),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildPageContent(int tabIndex) {
     switch (tabIndex) {
       case 0:
         return DashboardScreen();
       case 1:
-        return  MarketScreen();
+        return MarketScreen();
       case 2:
-        return  PortfolioScreen();  
+        return PortfolioScreen();
       case 3:
-        return  InvestorScreen();  
+        return InvestorScreen();
       default:
-        return  DashboardScreen();
+        return DashboardScreen();
     }
   }
 }

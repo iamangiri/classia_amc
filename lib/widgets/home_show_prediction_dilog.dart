@@ -1,5 +1,6 @@
+import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:jiffy/jiffy.dart';
 
 void showAddPredictionDialog(BuildContext context) {
   final TextEditingController _predictedPointsController = TextEditingController();
@@ -35,7 +36,7 @@ void showAddPredictionDialog(BuildContext context) {
               if (predictedPoints.isNotEmpty) {
                 // Add the new prediction to the list
                 final newPrediction = {
-                  'date': DateFormat('yyyy-MM-dd').format(DateTime.now()), // Current date
+                  'date': formatDate(DateTime.now(), [dd, ' ', M, ' ', yyyy]), // "04 Mar 2025"
                   'predictedPoints': predictedPoints,
                   'achievedPoints': '0', // Default achieved points
                 };

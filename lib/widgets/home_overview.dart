@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Widget buildOverview(String totalAssets, String nav, String lotValue) {
+Widget buildOverview(String totalAssets, String nav, String unitValue) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     child: Row(
@@ -66,12 +66,12 @@ Widget buildOverview(String totalAssets, String nav, String lotValue) {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Lot Value',
+                    'Unit Value',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[700]),
                   ),
                   SizedBox(height: 6),
                   Text(
-                    lotValue,
+                    unitValue,
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.orange[800]),
                   ),
                 ],

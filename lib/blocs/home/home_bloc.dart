@@ -17,7 +17,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         ],
         totalAssets: '\$10,000,000',
         nav: '\$1,500',
-        lotValue: '\$1,500',
+        unitValue: '\$1,500',
         recentActivities: [
           'Asset A updated',
           'Asset B added',

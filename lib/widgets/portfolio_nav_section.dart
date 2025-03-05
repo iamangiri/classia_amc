@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-Widget buildNAVSection(double currentNAV, double lotValue) {
+Widget buildNAVSection(double currentNAV, double unitValue) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
     children: [
       _buildCard("Current NAV", currentNAV, Colors.green, FontAwesomeIcons.chartLine),
-      _buildCard("Unit Value", lotValue, Colors.blue, FontAwesomeIcons.wallet),
+      _buildCard("Unit Value", unitValue, Colors.blue, FontAwesomeIcons.wallet),
     ],
   );
 }

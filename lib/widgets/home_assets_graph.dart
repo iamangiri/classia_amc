@@ -3,7 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../themes/light_app_theme.dart';
 
 class AssetGraph extends StatefulWidget {
-  final Map<String, List<FlSpot>> data; // Data for totalAssets, nav, and lotValue
+  final Map<String, List<FlSpot>> data; // Data for totalAssets, nav, and unitValue
   final String selectedFilter; // Selected filter (e.g., '1 Week', '1 Month')
 
   const AssetGraph({
@@ -103,7 +103,7 @@ class _AssetGraphState extends State<AssetGraph> {
                       ),
                       // Lot Value Line
                       LineChartBarData(
-                        spots: widget.data['lotValue']!,
+                        spots: widget.data['unitValue']!,
                         isCurved: true,
                         color: Colors.orange,
                         dotData: FlDotData(show: false),
