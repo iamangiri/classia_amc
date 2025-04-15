@@ -55,12 +55,5 @@ class MarketCompany {
     {"id": "53", "name": "Adani Green Energy", "symbol": "ADANIGREEN", "exchange": "BSE"},
     {"id": "54", "name": "Vedanta", "symbol": "VEDL", "exchange": "NSE"},
     {"id": "55", "name": "Tata Power", "symbol": "TATAPOWER", "exchange": "BSE"},
-    // Add 45 more companies to make it 100...
-
-
-
-
-
-
   ];
 }

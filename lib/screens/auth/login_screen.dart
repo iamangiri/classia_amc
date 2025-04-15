@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../service/auth_service.dart';
 import '../../themes/light_app_theme.dart';
 import 'registation_screen.dart';
 
@@ -15,11 +17,48 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>(); // Form Key for Validation
   bool isPasswordVisible = false;
 
-  void _validateAndLogin() {
+
+  void _validateAndLogin() async {
     if (_formKey.currentState!.validate()) {
-      context.go('/main');
+      final email = emailController.text.trim();
+      final password = passwordController.text;
+
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => Center(child: CircularProgressIndicator()),
+      );
+
+      final result = await AuthService.login(email, password);
+
+      Navigator.pop(context); // Hide loading
+
+      if (result['success']) {
+        // Access token from the nested 'data' key
+        final token = result['data']?['data']?['token'];
+        if (token == null || token is! String || token.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Login error: token not received.")),
+          );
+          return;
+        }
+
+        // Save token in SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', token);
+
+        // Navigate to main screen
+        context.go('/main');
+      } else {
+        // Show error message if login failed
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'] ?? "Login failed")),
+        );
+      }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
