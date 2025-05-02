@@ -16,8 +16,6 @@ class PortfolioScreen extends StatelessWidget {
     context.read<PortfolioBloc>().add(LoadPortfolioData());
 
     return Scaffold(
-
-
     appBar: AppBar(
     backgroundColor: AppTheme.lightTheme.primaryColor,
       centerTitle: true, // Centering title for modern alignment

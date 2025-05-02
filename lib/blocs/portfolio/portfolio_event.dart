@@ -7,10 +7,10 @@ abstract class PortfolioEvent extends Equatable {
   List<Object> get props => [];
 }
 
-// 📌 Load Portfolio Data
+// Load Portfolio Data
 class LoadPortfolioData extends PortfolioEvent {}
 
-// 📌 Add Company (Handles Quantity)
+// Add Company (Handles Quantity)
 class AddCompanyToPortfolio extends PortfolioEvent {
   final Map<String, dynamic> company;
 

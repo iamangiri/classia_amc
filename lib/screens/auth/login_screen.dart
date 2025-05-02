@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../service/auth_service.dart';
@@ -16,7 +15,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>(); // Form Key for Validation
   bool isPasswordVisible = false;
-
 
   void _validateAndLogin() async {
     if (_formKey.currentState!.validate()) {
@@ -35,11 +33,22 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pop(context); // Hide loading
 
       if (result['success']) {
-        // Access token from the nested 'data' key
+        // Access token and user's role from the nested 'data' key
         final token = result['data']?['data']?['token'];
+        final role = result['data']?['data']?['user']?['Role'];
+
+        // Check that the token exists
         if (token == null || token is! String || token.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Login error: token not received.")),
+          );
+          return;
+        }
+
+        // Check if user's role is AMC
+        if (role != 'AMC') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Invalid user id/pass: unable to login in AMC.")),
           );
           return;
         }
@@ -58,6 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
+
 
 
   @override
