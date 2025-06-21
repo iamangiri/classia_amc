@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../service/auth_service.dart';
 import '../../themes/light_app_theme.dart';
-import 'registation_screen.dart';
+import '../../utils/constant/user_constant.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -13,7 +12,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>(); // Form Key for Validation
+  final _formKey = GlobalKey<FormState>();
   bool isPasswordVisible = false;
 
   void _validateAndLogin() async {
@@ -28,47 +27,56 @@ class _LoginScreenState extends State<LoginScreen> {
         builder: (_) => Center(child: CircularProgressIndicator()),
       );
 
-      final result = await AuthService.login(email, password);
+      try {
+        final result = await AuthService.login(email, password);
 
-      Navigator.pop(context); // Hide loading
+        Navigator.pop(context); // Hide loading
 
-      if (result['success']) {
-        // Access token and user's role from the nested 'data' key
-        final token = result['data']?['data']?['token'];
-        final role = result['data']?['data']?['user']?['Role'];
+        if (result['success'] == true) {
+          // Correct way to access the token and user data
+          final token = result['data']['data']['token']?.toString();
+          final user = result['data']['data']['user'] as Map<String, dynamic>?;
+          final role = user?['Role']?.toString();
 
-        // Check that the token exists
-        if (token == null || token is! String || token.isEmpty) {
+          // Debug prints to verify values
+          print('Token: $token, Type: ${token.runtimeType}');
+          print('User: $user');
+          print('Role: $role');
+
+          // Validate token
+          if (token == null || token.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Login error: token not received.")),
+            );
+            return;
+          }
+
+          // Validate role
+          if (role != 'AMC') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Invalid user id/pass: unable to login in AMC.")),
+            );
+            return;
+          }
+
+          // Store user data in UserConstants
+          await UserConstants.storeUserData(user!, token);
+
+          // Navigate to main screen
+          context.go('/main');
+        } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Login error: token not received.")),
+            SnackBar(content: Text(result['message'] ?? "Login failed")),
           );
-          return;
         }
-
-        // Check if user's role is AMC
-        if (role != 'AMC') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Invalid user id/pass: unable to login in AMC.")),
-          );
-          return;
-        }
-
-        // Save token in SharedPreferences
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', token);
-
-        // Navigate to main screen
-        context.go('/main');
-      } else {
-        // Show error message if login failed
+      } catch (e) {
+        Navigator.pop(context); // Hide loading in case of error
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'] ?? "Login failed")),
+          SnackBar(content: Text("An error occurred: ${e.toString()}")),
         );
       }
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -100,79 +108,79 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                     SizedBox(height: 30),
-
-                    // Email Input
                     _buildTextField(
                       controller: emailController,
                       label: "Email",
                       icon: Icons.email,
                       isPassword: false,
                       validator: (value) {
-                        if (value == null || value.isEmpty) return "Please enter your email";
-                        if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value)) {
+                        if (value == null || value.isEmpty) {
+                          return "Please enter your email";
+                        }
+                        if (!RegExp(r'^[a-zA-Z_0-9._%+-]+@[a-zA-Z_0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
                           return "Enter a valid email";
                         }
                         return null;
                       },
                     ),
                     SizedBox(height: 20),
-
-                    // Password Input
                     _buildTextField(
                       controller: passwordController,
                       label: "Password",
                       icon: Icons.lock,
                       isPassword: true,
                       validator: (value) {
-                        if (value == null || value.isEmpty) return "Please enter your password";
-                        if (value.length < 6) return "Password must be at least 6 characters";
+                        if (value == null || value.isEmpty) {
+                          return "Please enter your password";
+                        }
+                        if (value.length < 6) {
+                          return "Password must be at least 6 characters";
+                        }
                         return null;
                       },
                     ),
-
                     SizedBox(height: 10),
-
-                    // Forgot Password
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {},
-                        child: Text("Forgot Password?", style: TextStyle(color: AppTheme.lightTheme.primaryColor)),
+                        child: Text(
+                          "Forgot Password?",
+                          style: TextStyle(color: AppTheme.lightTheme.primaryColor),
+                        ),
                       ),
                     ),
-
                     SizedBox(height: 20),
-
-                    // Login Button
-                    ElevatedButton(
-                      onPressed: _validateAndLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.lightTheme.primaryColor,
-                        padding: EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: Center(
-                        child: Text("Login", style: TextStyle(fontSize: 16, color: Colors.white)),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _validateAndLogin,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.lightTheme.primaryColor,
+                          padding: EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(
+                          "Login",
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
                       ),
                     ),
-
                     SizedBox(height: 20),
-
-                    // Register Option
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text("Don't have an account? "),
+                        Text("Don't have an account?"),
                         TextButton(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => RegistrationScreen()),
-                            );
+                            // No action for now
                           },
                           child: Text(
-                            "Register",
-                            style: TextStyle(color: AppTheme.lightTheme.primaryColor, fontWeight: FontWeight.bold),
+                            "contact our support team",
+                            style: TextStyle(
+                              color: AppTheme.lightTheme.primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -187,7 +195,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Curved AppBar
   Widget _buildCurvedAppBar() {
     return Container(
       width: double.infinity,
@@ -201,7 +208,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       child: Stack(
         children: [
-
           Center(
             child: Text(
               "Login",
@@ -213,7 +219,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Custom Text Field
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,

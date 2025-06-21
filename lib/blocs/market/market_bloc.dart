@@ -1,11 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'market_company_list.dart';
+import 'market_api_service.dart';
 import 'market_event.dart';
 import 'market_state.dart';
-import 'database_service.dart';
 
 class MarketBloc extends Bloc<MarketEvent, MarketState> {
-  final DatabaseService _databaseService = DatabaseService();
+  final MarketApiService _apiService = MarketApiService();
 
   MarketBloc() : super(MarketLoading()) {
     on<LoadMarketData>(_onLoadMarketData);
@@ -17,23 +16,31 @@ class MarketBloc extends Bloc<MarketEvent, MarketState> {
   void _onLoadMarketData(LoadMarketData event, Emitter<MarketState> emit) async {
     emit(MarketLoading());
 
-    await Future.delayed(Duration(seconds: 2)); // Simulate API delay
+    try {
+      // Fetch stocks from API
+      final stocks = await _apiService.fetchStockData(1, 500);
+      // Map API response to match existing company structure
+      final companies = stocks.map((stock) => {
+        'id': stock['ID'].toString(),
+        'name': stock['Name'].toString(),
+        'symbol': stock['Symbol'].toString(),
+        'exchange': stock['Exchange'].toString(),
+      }).toList();
 
-
-    final selectedCompanies = await _databaseService.getSelectedCompanies();
-    final selectedIds = selectedCompanies.map((c) => c["id"] as String).toList();
-
-    emit(MarketLoaded(
-      companies: MarketCompany.companies,
-      selectedCompanies: selectedIds,
-      originalCompanies: MarketCompany.companies,
-    ));
+      emit(MarketLoaded(
+        companies: companies,
+        selectedCompanies: [], // No local storage, so start empty
+        originalCompanies: companies,
+      ));
+    } catch (e) {
+      emit(MarketError('Failed to load market data: ${e.toString()}'));
+    }
   }
 
   void _onSearchCompany(SearchCompany event, Emitter<MarketState> emit) {
     final state = this.state as MarketLoaded;
     final filteredCompanies = state.originalCompanies.where((company) {
-      return company["name"].toLowerCase().contains(event.query.toLowerCase());
+      return company['name'].toLowerCase().contains(event.query.toLowerCase());
     }).toList();
 
     emit(state.copyWith(companies: filteredCompanies, searchQuery: event.query));
@@ -41,9 +48,9 @@ class MarketBloc extends Bloc<MarketEvent, MarketState> {
 
   void _onFilterByExchange(FilterByExchange event, Emitter<MarketState> emit) {
     final state = this.state as MarketLoaded;
-    final filteredCompanies = event.exchange == "All"
+    final filteredCompanies = event.exchange == 'All'
         ? state.originalCompanies
-        : state.originalCompanies.where((company) => company["exchange"] == event.exchange).toList();
+        : state.originalCompanies.where((company) => company['exchange'] == event.exchange).toList();
 
     emit(state.copyWith(companies: filteredCompanies, filterExchange: event.exchange));
   }
@@ -51,23 +58,22 @@ class MarketBloc extends Bloc<MarketEvent, MarketState> {
   void _onToggleCompanySelection(ToggleCompanySelection event, Emitter<MarketState> emit) async {
     final state = this.state as MarketLoaded;
     final selectedCompanies = List<String>.from(state.selectedCompanies);
-    final company = state.originalCompanies.firstWhere((c) => c["id"] == event.companyId);
+    final isSelected = selectedCompanies.contains(event.companyId);
 
-    if (selectedCompanies.contains(event.companyId)) {
-      selectedCompanies.remove(event.companyId);
-      await _databaseService.deleteCompany(event.companyId);
-    } else {
-      selectedCompanies.add(event.companyId);
-      // Ensure the company map has the correct types
-      Map<String, dynamic> companyToInsert = {
-        'id': company['id'].toString(),
-        'name': company['name'].toString(),
-        'symbol': company['symbol'].toString(),
-        'exchange': company['exchange'].toString(),
-      };
-      await _databaseService.insertOrUpdateCompany(companyToInsert);
+    try {
+      // Call API to toggle selection
+      await _apiService.toggleStockSelection(event.companyId, isSelected);
+
+      // Update selected companies list
+      if (isSelected) {
+        selectedCompanies.remove(event.companyId);
+      } else {
+        selectedCompanies.add(event.companyId);
+      }
+
+      emit(state.copyWith(selectedCompanies: selectedCompanies));
+    } catch (e) {
+      emit(MarketError('Failed to toggle stock: ${e.toString()}'));
     }
-
-    emit(state.copyWith(selectedCompanies: selectedCompanies));
   }
 }

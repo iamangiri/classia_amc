@@ -19,7 +19,7 @@ class SplashScreen extends StatelessWidget {
             final token = prefs.getString('auth_token');
             // Check if the token exists and is not empty.
             if (token != null && token.isNotEmpty) {
-              context.go('/main');
+              context.go('/login');
             } else {
               context.go('/onboarding');
             }

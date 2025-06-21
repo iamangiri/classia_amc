@@ -1,0 +1,2 @@
+/Users/prakashkumar/Desktop/swift_practice/firstproject/classia_amc/android/app/.cxx/Debug/6u4l4ov2/x86/CMakeFiles/edit_cache.dir
+/Users/prakashkumar/Desktop/swift_practice/firstproject/classia_amc/android/app/.cxx/Debug/6u4l4ov2/x86/CMakeFiles/rebuild_cache.dir

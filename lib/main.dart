@@ -1,8 +1,8 @@
+import 'package:classia_amc/utils/constant/user_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'blocs/main_screen/main_screen_bloc.dart';
-import 'blocs/market/database_service.dart';
 import 'blocs/market/market_bloc.dart';
 import 'blocs/market/market_event.dart';
 import 'blocs/portfolio/portfolio_bloc.dart';
@@ -14,8 +14,7 @@ import 'themes/light_app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final DatabaseService databaseService = DatabaseService();
-  await databaseService.database;
+  await UserConstants.loadUserData();
 
   runApp(const MyApp());
 }

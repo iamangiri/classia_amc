@@ -19,23 +19,22 @@ class CompanyList extends StatelessWidget {
             itemCount: state.companies.length,
             itemBuilder: (context, index) {
               final company = state.companies[index];
-              final isSelected = state.selectedCompanies.contains(company["id"]);
+              final isSelected = state.selectedCompanies.contains(company['id']);
               return GestureDetector(
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => TradeChartScreen(exchange: company["exchange"], symbol: company["symbol"]),
+                      builder: (context) => TradeChartScreen(exchange: company['exchange'], symbol: company['symbol']),
                     ),
                   );
-
                 },
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: isSelected ? Colors.grey.shade300 : Colors.grey.shade400,
-                      width: isSelected ? 2 : 1, // 2px for selected, 1px for normal
+                      width: isSelected ? 2 : 1,
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -53,16 +52,16 @@ class CompanyList extends StatelessWidget {
                         child: Icon(FontAwesomeIcons.building, color: Colors.blue.shade700, size: 18),
                       ),
                       title: Text(
-                        company["name"],
+                        company['name'],
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
                       ),
                       subtitle: Text(
-                        "${company["symbol"]} (${company["exchange"]})",
+                        '${company['symbol']} (${company['exchange']})',
                         style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                       ),
                       trailing: GestureDetector(
                         onTap: () {
-                          context.read<MarketBloc>().add(ToggleCompanySelection(company["id"]));
+                          context.read<MarketBloc>().add(ToggleCompanySelection(company['id']));
                         },
                         child: Container(
                           padding: EdgeInsets.all(8),
@@ -84,8 +83,10 @@ class CompanyList extends StatelessWidget {
               );
             },
           );
+        } else if (state is MarketError) {
+          return Center(child: Text(state.message));
         } else {
-          return Center(child: Text("Something went wrong!"));
+          return Center(child: Text('Something went wrong!'));
         }
       },
     );
