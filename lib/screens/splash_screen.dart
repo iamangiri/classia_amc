@@ -38,7 +38,7 @@ class SplashScreen extends StatelessWidget {
                 );
               },
               child: Image.asset(
-                'assets/images/splash-2.png', // Ensure the asset exists
+                'assets/images/classia-logo.jpg', // Ensure the asset exists
                 width: 150,
               ),
             ),

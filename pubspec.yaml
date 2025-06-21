@@ -90,8 +90,11 @@ flutter:
     - assets/anim/anim_2.json
     - assets/anim/trade-6.json
     - assets/images/logo.jpeg
+    - assets/images/classia.jpg
+    - assets/images/classia-logo.jpg
+
 
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.jpeg"  # Path to your logo image
+  image_path: "assets/images/classia.jpg"  # Path to your logo image

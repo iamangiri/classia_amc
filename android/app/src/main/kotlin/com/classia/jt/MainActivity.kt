@@ -1,4 +1,4 @@
-package com.classia.amc
+package com.classia.jt
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 
