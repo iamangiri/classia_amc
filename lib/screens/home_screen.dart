@@ -1,4 +1,5 @@
 import 'package:classia_amc/blocs/home/home_bloc.dart';
+import 'package:classia_amc/screens/userprofile/customer_support_screen.dart';
 import 'package:classia_amc/themes/light_app_theme.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -39,6 +40,18 @@ class DashboardScreen extends StatelessWidget {
           ),
         ),
         actions: [
+
+          IconButton(
+            icon: Icon(Icons.support_agent, color: Colors.white, size: 22),
+            onPressed:  () {
+              // TODO: Implement customer support action
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CustomerSupportScreen()),
+              );
+            },
+          ),
+
           IconButton(
             icon: FaIcon(FontAwesomeIcons.bell, color: Colors.white, size: 22),
             onPressed: () {
