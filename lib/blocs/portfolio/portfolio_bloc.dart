@@ -1,12 +1,15 @@
 import 'package:classia_amc/blocs/portfolio/portfolio_event.dart';
 import 'package:classia_amc/blocs/portfolio/portfolio_state.dart';
+import 'package:classia_amc/utils/constant/user_constant.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../service/alpha_vantage_service.dart';
 import '../market/database_service.dart';
+import 'api_service.dart';
 
 class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
   final DatabaseService _databaseService = DatabaseService();
   final AlphaVantageService _alphaVantageService = AlphaVantageService();
+  final ClassiaApiService _classiaApiService = ClassiaApiService();
 
   PortfolioBloc() : super(PortfolioLoading()) {
     on<LoadPortfolioData>(_onLoadPortfolioData);
@@ -16,46 +19,59 @@ class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
     on<DecreaseCompanyQuantity>(_onDecreaseCompanyQuantity);
   }
 
-  // 📌 Load Portfolio Data
-// 📌 Load Portfolio Data
+  // 📌 Load Portfolio Data - Now uses API instead of database
   void _onLoadPortfolioData(LoadPortfolioData event, Emitter<PortfolioState> emit) async {
     emit(PortfolioLoading());
-    final companies = await _databaseService.getSelectedCompanies();
 
-    // Fetch real-time prices for all companies
-    final updatedCompanies = await _updateCompanyPrices(companies);
+    try {
+      // Get picked stocks from API
+      final companies = await _classiaApiService.getPickedStockList(limit: 50, page: 1);
 
-    // Calculate NAV
-    double currentNAV = _calculateNAV(updatedCompanies);
+      // Fetch real-time prices for all companies
+      final updatedCompanies = await _updateCompanyPrices(companies);
 
-    // Calculate Unit Price
-    double unitPrice = _calculateUnitValue(currentNAV);
+      // Calculate NAV
+      double currentNAV = _calculateNAV(updatedCompanies);
 
-    // Calculate Predicted Jockey Point
-    double predictedJockeyPoint = _calculatePredictedJockeyPoint(updatedCompanies.length);
+      // Calculate Unit Price
+      double unitPrice = _calculateUnitValue(currentNAV);
 
-    emit(PortfolioLoaded(
-      accountName: "ICICI Prudential Mutual Fund",
-      accountManager: "Aman Giri",
-      amcImage: "https://upload.wikimedia.org/wikipedia/en/thumb/4/44/ICICI_Prudential_Mutual_Fund_Logo.svg/2560px-ICICI_Prudential_Mutual_Fund_Logo.svg.png",
-      managerImage: "https://www.icicipruamc.com/content/dam/icici-prudential-website/about-us/leadership/Amit_Ganatra.jpg",
-      currentNAV: currentNAV,
-      unit: unitPrice,  // ✅ Unit price is now updated when screen opens
-      companies: updatedCompanies,
-      joycePoint: 3.4,
-      predictedJockeyPoint: predictedJockeyPoint,
-    ));
+      // Calculate Predicted Jockey Point
+      double predictedJockeyPoint = _calculatePredictedJockeyPoint(updatedCompanies.length);
 
+      emit(PortfolioLoaded(
+        accountName: "${UserConstants.NAME}",
+        accountManager: "${UserConstants.CONTACT_PERSON_NAME}",
+        amcImage: "https://upload.wikimedia.org/wikipedia/en/thumb/4/44/ICICI_Prudential_Mutual_Fund_Logo.svg/2560px-ICICI_Prudential_Mutual_Fund_Logo.svg.png",
+        managerImage: "https://www.icicipruamc.com/content/dam/icici-prudential-website/about-us/leadership/Amit_Ganatra.jpg",
+        currentNAV: currentNAV,
+        unit: unitPrice,
+        companies: updatedCompanies,
+        joycePoint: 3.4,
+        predictedJockeyPoint: predictedJockeyPoint,
+      ));
+    } catch (e) {
+      print('Error loading portfolio data: $e');
+      emit(PortfolioLoaded(
+        accountName: "${UserConstants.NAME}",
+        accountManager: "${UserConstants.CONTACT_PERSON_NAME}",
+        amcImage: "https://upload.wikimedia.org/wikipedia/en/thumb/4/44/ICICI_Prudential_Mutual_Fund_Logo.svg/2560px-ICICI_Prudential_Mutual_Fund_Logo.svg.png",
+        managerImage: "https://www.icicipruamc.com/content/dam/icici-prudential-website/about-us/leadership/Amit_Ganatra.jpg",
+        currentNAV: 0.0,
+        unit: 0.0,
+        companies: [],
+        joycePoint: 3.4,
+        predictedJockeyPoint: 0.0,
+      ));
+    }
   }
-
-
 
   // 📌 Update company prices using Alpha Vantage
   Future<List<Map<String, dynamic>>> _updateCompanyPrices(List<Map<String, dynamic>> companies) async {
     final updatedCompanies = <Map<String, dynamic>>[];
 
     for (final company in companies) {
-      final symbol = '${company['symbol']}.BSE'; // Append .BSE for Indian stocks
+      final symbol = '${company['symbol']}.NSE'; // Use .NSE for Indian stocks from NSE
       final price = await _alphaVantageService.getStockPrice(symbol);
       updatedCompanies.add({...company, 'price': price});
     }
@@ -70,79 +86,105 @@ class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
     });
   }
 
-  // 📌 Add Company to Portfolio
+  // 📌 Add Company to Portfolio - Now uses API
   void _onAddCompanyToPortfolio(AddCompanyToPortfolio event, Emitter<PortfolioState> emit) async {
     final state = this.state as PortfolioLoaded;
-    await _databaseService.insertOrUpdateCompany(event.company);
 
-    final updatedCompanies = await _databaseService.getSelectedCompanies();
-    final updatedCompaniesWithPrices = await _updateCompanyPrices(updatedCompanies);
-    final newNAV = _calculateNAV(updatedCompaniesWithPrices);
+    // Pick the stock using API
+    final success = await _classiaApiService.pickStock(event.company['id']);
 
-    emit(state.copyWith(companies: updatedCompaniesWithPrices, currentNAV: newNAV));
+    if (success) {
+      // Reload the portfolio data from API
+      final updatedCompanies = await _classiaApiService.getPickedStockList(limit: 50, page: 1);
+      final updatedCompaniesWithPrices = await _updateCompanyPrices(updatedCompanies);
+      final newNAV = _calculateNAV(updatedCompaniesWithPrices);
+
+      emit(state.copyWith(
+        companies: updatedCompaniesWithPrices,
+        currentNAV: newNAV,
+        unit: _calculateUnitValue(newNAV),
+        predictedJockeyPoint: _calculatePredictedJockeyPoint(updatedCompaniesWithPrices.length),
+      ));
+    }
   }
 
   void _onRemoveCompanyFromPortfolio(RemoveCompanyFromPortfolio event, Emitter<PortfolioState> emit) async {
     final state = this.state as PortfolioLoaded;
-    await _databaseService.deleteCompany(event.companyId);
 
-    final updatedCompanies = await _databaseService.getSelectedCompanies();
-    final updatedCompaniesWithPrices = await _updateCompanyPrices(updatedCompanies);
-    final newNAV = _calculateNAV(updatedCompaniesWithPrices);
+    // Unpick the stock using API
+    final success = await _classiaApiService.unpickStock(event.companyId);
 
-    emit(state.copyWith(companies: updatedCompaniesWithPrices, currentNAV: newNAV));
+    if (success) {
+      // Reload the portfolio data from API
+      final updatedCompanies = await _classiaApiService.getPickedStockList(limit: 50, page: 1);
+      final updatedCompaniesWithPrices = await _updateCompanyPrices(updatedCompanies);
+      final newNAV = _calculateNAV(updatedCompaniesWithPrices);
+
+      emit(state.copyWith(
+        companies: updatedCompaniesWithPrices,
+        currentNAV: newNAV,
+        unit: _calculateUnitValue(newNAV),
+        predictedJockeyPoint: _calculatePredictedJockeyPoint(updatedCompaniesWithPrices.length),
+      ));
+    }
   }
 
-  // 📌 Increase Quantity
+  // 📌 Increase Quantity - Now updates in memory only
   void _onIncreaseCompanyQuantity(IncreaseCompanyQuantity event, Emitter<PortfolioState> emit) async {
     final state = this.state as PortfolioLoaded;
     print("🔺 Increasing quantity for company ID: ${event.companyId}");
 
-    await _databaseService.updateCompanyQuantity(event.companyId, 1); // Increase quantity by 1
+    // Update quantity in memory
+    final updatedCompanies = state.companies.map((company) {
+      if (company['id'] == event.companyId) {
+        return {...company, 'quantity': company['quantity'] + 1};
+      }
+      return company;
+    }).toList();
 
-    final updatedCompanies = await _databaseService.getSelectedCompanies();
-    final updatedCompaniesWithPrices = await _updateCompanyPrices(updatedCompanies);
-    final newNAV = _calculateNAV(updatedCompaniesWithPrices);
+    final newNAV = _calculateNAV(updatedCompanies);
 
     emit(state.copyWith(
-      companies: updatedCompaniesWithPrices,
+      companies: updatedCompanies,
       currentNAV: newNAV,
-      unit: _calculateUnitValue(newNAV), // Update unit value
-      predictedJockeyPoint: _calculatePredictedJockeyPoint(updatedCompaniesWithPrices.length), // Update predicted value
+      unit: _calculateUnitValue(newNAV),
+      predictedJockeyPoint: _calculatePredictedJockeyPoint(updatedCompanies.length),
     ));
     print("✅ Quantity increased successfully");
   }
 
-  // 📌 Decrease Quantity (Removes if 0)
+  // 📌 Decrease Quantity - Now updates in memory only
   void _onDecreaseCompanyQuantity(DecreaseCompanyQuantity event, Emitter<PortfolioState> emit) async {
     final state = this.state as PortfolioLoaded;
     print("🔻 Decreasing quantity for company ID: ${event.companyId}");
 
-    await _databaseService.updateCompanyQuantity(event.companyId, -1); // Decrease quantity by 1
+    // Update quantity in memory
+    final updatedCompanies = state.companies.map((company) {
+      if (company['id'] == event.companyId) {
+        final newQuantity = company['quantity'] - 1;
+        return {...company, 'quantity': newQuantity > 0 ? newQuantity : 1}; // Minimum quantity is 1
+      }
+      return company;
+    }).toList();
 
-    final updatedCompanies = await _databaseService.getSelectedCompanies();
-    final updatedCompaniesWithPrices = await _updateCompanyPrices(updatedCompanies);
-    final newNAV = _calculateNAV(updatedCompaniesWithPrices);
+    final newNAV = _calculateNAV(updatedCompanies);
 
     emit(state.copyWith(
-      companies: updatedCompaniesWithPrices,
+      companies: updatedCompanies,
       currentNAV: newNAV,
-      unit: _calculateUnitValue(newNAV), // Update unit value
-      predictedJockeyPoint: _calculatePredictedJockeyPoint(updatedCompaniesWithPrices.length), // Update predicted value
+      unit: _calculateUnitValue(newNAV),
+      predictedJockeyPoint: _calculatePredictedJockeyPoint(updatedCompanies.length),
     ));
     print("✅ Quantity decreased successfully");
   }
-
 
   // 📌 Predict Jockey Point based on number of selected companies
   double _calculatePredictedJockeyPoint(int companyCount) {
     return (companyCount * 0.5).clamp(0, 10); // Example calculation
   }
 
-
   // 📌 Calculate Unit Value (Example calculation)
   double _calculateUnitValue(double nav) {
     return nav / 100; // Replace with your actual calculation
   }
-
 }
