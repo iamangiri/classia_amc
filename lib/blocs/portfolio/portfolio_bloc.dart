@@ -154,28 +154,66 @@ class PortfolioBloc extends Bloc<PortfolioEvent, PortfolioState> {
   }
 
   // 📌 Decrease Quantity - Now updates in memory only
+  // 📌 Decrease Quantity - Now unpicks stock if quantity is 1
   void _onDecreaseCompanyQuantity(DecreaseCompanyQuantity event, Emitter<PortfolioState> emit) async {
     final state = this.state as PortfolioLoaded;
     print("🔻 Decreasing quantity for company ID: ${event.companyId}");
 
-    // Update quantity in memory
-    final updatedCompanies = state.companies.map((company) {
-      if (company['id'] == event.companyId) {
-        final newQuantity = company['quantity'] - 1;
-        return {...company, 'quantity': newQuantity > 0 ? newQuantity : 1}; // Minimum quantity is 1
+    // Find the company to check its current quantity
+    final company = state.companies.firstWhere(
+          (company) => company['id'] == event.companyId,
+      orElse: () => {},
+    );
+
+    if (company.isEmpty) {
+      print("❌ Company not found with ID: ${event.companyId}");
+      return;
+    }
+
+    final currentQuantity = company['quantity'] as int;
+
+    // If quantity is 1, unpick the stock using API
+    if (currentQuantity <= 1) {
+      print("🚫 Unpicking stock as quantity is 1");
+
+      // Unpick the stock using API
+      final success = await _classiaApiService.unpickStock(event.companyId);
+
+      if (success) {
+        // Reload the portfolio data from API
+        final updatedCompanies = await _classiaApiService.getPickedStockList(limit: 50, page: 1);
+        final updatedCompaniesWithPrices = await _updateCompanyPrices(updatedCompanies);
+        final newNAV = _calculateNAV(updatedCompaniesWithPrices);
+
+        emit(state.copyWith(
+          companies: updatedCompaniesWithPrices,
+          currentNAV: newNAV,
+          unit: _calculateUnitValue(newNAV),
+          predictedJockeyPoint: _calculatePredictedJockeyPoint(updatedCompaniesWithPrices.length),
+        ));
+        print("✅ Stock unpicked successfully");
+      } else {
+        print("❌ Failed to unpick stock");
       }
-      return company;
-    }).toList();
+    } else {
+      // If quantity > 1, just decrease the quantity in memory
+      final updatedCompanies = state.companies.map((company) {
+        if (company['id'] == event.companyId) {
+          return {...company, 'quantity': company['quantity'] - 1};
+        }
+        return company;
+      }).toList();
 
-    final newNAV = _calculateNAV(updatedCompanies);
+      final newNAV = _calculateNAV(updatedCompanies);
 
-    emit(state.copyWith(
-      companies: updatedCompanies,
-      currentNAV: newNAV,
-      unit: _calculateUnitValue(newNAV),
-      predictedJockeyPoint: _calculatePredictedJockeyPoint(updatedCompanies.length),
-    ));
-    print("✅ Quantity decreased successfully");
+      emit(state.copyWith(
+        companies: updatedCompanies,
+        currentNAV: newNAV,
+        unit: _calculateUnitValue(newNAV),
+        predictedJockeyPoint: _calculatePredictedJockeyPoint(updatedCompanies.length),
+      ));
+      print("✅ Quantity decreased successfully");
+    }
   }
 
   // 📌 Predict Jockey Point based on number of selected companies
