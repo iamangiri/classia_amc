@@ -23,6 +23,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   late MotionTabBarController _motionTabBarController;
   final LocalAuthService _localAuthService = LocalAuthService();
   bool isAuthenticating = true;
+  bool authenticationFailed = false;
+  String authMessage = "Authenticating...";
 
   @override
   void initState() {
@@ -41,27 +43,95 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-
-
   Future<void> _authenticateUser() async {
-    bool isAuthenticated = await _localAuthService.authenticate();
+    try {
+      setState(() {
+        isAuthenticating = true;
+        authenticationFailed = false;
+        authMessage = "Checking authentication...";
+      });
 
-    if (!isAuthenticated) {
-      Navigator.pop(context);
-      return;
+      // Add a small delay to show the loading screen
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Check if biometric is available first
+      bool isBiometricAvailable = await _localAuthService.isBiometricAvailable();
+
+      if (!isBiometricAvailable) {
+        setState(() {
+          authMessage = "Biometric not available. Proceeding...";
+        });
+        await Future.delayed(const Duration(milliseconds: 1000));
+        setState(() {
+          isAuthenticating = false;
+        });
+        return;
+      }
+
+      setState(() {
+        authMessage = "Authenticating...";
+      });
+
+      bool isAuthenticated = await _localAuthService.authenticate();
+
+      if (!isAuthenticated) {
+        // Check if locked out
+        if (_localAuthService.isLockedOut()) {
+          setState(() {
+            authenticationFailed = true;
+            authMessage = "Too many failed attempts. Try again in ${_localAuthService.getRemainingLockTime()} seconds.";
+          });
+
+          // Auto retry after lockout period
+          Future.delayed(Duration(seconds: _localAuthService.getRemainingLockTime() + 1), () {
+            if (mounted) {
+              _authenticateUser();
+            }
+          });
+          return;
+        } else {
+          setState(() {
+            authenticationFailed = true;
+            authMessage = "Authentication failed. Tap to retry.";
+          });
+          return;
+        }
+      }
+
+      setState(() {
+        isAuthenticating = false;
+        authenticationFailed = false;
+      });
+
+    } catch (e) {
+      print("Error during authentication: $e");
+      // On any error, proceed to main screen to prevent blank screen
+      setState(() {
+        authMessage = "Authentication error. Proceeding...";
+      });
+      await Future.delayed(const Duration(milliseconds: 1000));
+      setState(() {
+        isAuthenticating = false;
+        authenticationFailed = false;
+      });
     }
-
-    setState(() {
-      isAuthenticating = false;
-    });
-
   }
 
+  void _retryAuthentication() {
+    _localAuthService.resetAuthState();
+    _authenticateUser();
+  }
 
+  void _skipAuthentication() {
+    setState(() {
+      isAuthenticating = false;
+      authenticationFailed = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (isAuthenticating) {
+    if (isAuthenticating || authenticationFailed) {
       return _buildAuthLoadingScreen();
     }
 
@@ -106,7 +176,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     );
   }
 
-
   Widget _buildAuthLoadingScreen() {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -114,9 +183,52 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.fingerprint, size: 100, color:Colors.black54),
-            SizedBox(height: 10),
-            Text("Authenticating...", style: TextStyle(fontSize: 18, color: Colors.white70)),
+            if (!authenticationFailed) ...[
+              // Loading animation
+              Icon(Icons.fingerprint, size: 100, color: Colors.black54),
+              const SizedBox(height: 20),
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.lightTheme.primaryColor),
+              ),
+              const SizedBox(height: 20),
+            ] else ...[
+              // Error state
+              Icon(Icons.error_outline, size: 100, color: Colors.red),
+              const SizedBox(height: 20),
+            ],
+            Text(
+              authMessage,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: authenticationFailed ? Colors.red : Colors.black54,
+              ),
+            ),
+            if (authenticationFailed) ...[
+              const SizedBox(height: 30),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: _retryAuthentication,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.lightTheme.primaryColor,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text("Retry"),
+                  ),
+                  ElevatedButton(
+                    onPressed: _skipAuthentication,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text("Skip"),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),

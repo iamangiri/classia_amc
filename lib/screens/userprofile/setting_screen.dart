@@ -30,42 +30,44 @@ class SettingsScreen extends StatelessWidget {
               "Language",
               "Choose your preferred language.",
               FontAwesomeIcons.language,
-                  () {},
+                  () => _showComingSoonDialog(context, "Language"),
             ),
+
             _buildSettingsOption(
               context,
               "Dark Mode",
               "Toggle between light and dark themes.",
               FontAwesomeIcons.moon,
-                  () {},
+                  () => _showComingSoonDialog(context, "Dark Mode"),
             ),
+
             _buildSettingsOption(
               context,
               "App Permissions",
               "Manage camera, storage, and location access.",
               FontAwesomeIcons.lock,
-                  () {},
+                    () => _showComingSoonDialog(context, "App Permissions")
             ),
             _buildSettingsOption(
               context,
               "Data & Privacy",
               "Manage data collection and privacy settings.",
               FontAwesomeIcons.shieldHalved,
-                  () {},
+                    () => _showComingSoonDialog(context, "Data & Privacy")
             ),
             _buildSettingsOption(
               context,
               "Terms & Conditions",
               "Review our legal terms and agreements.",
               FontAwesomeIcons.fileContract,
-                  () {},
+                    () => _showComingSoonDialog(context, "Terms & Conditions")
             ),
             _buildSettingsOption(
               context,
               "Clear Cache",
               "Remove temporary files to free up space.",
               FontAwesomeIcons.trash,
-                  () {},
+                    () => _showComingSoonDialog(context, "Clear Cache")
             ),
 
             SizedBox(height: 40),
@@ -101,6 +103,31 @@ class SettingsScreen extends StatelessWidget {
       ),
     );
   }
+
+
+  void _showComingSoonDialog(BuildContext context, String title) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Row(
+          children: [
+            Icon(FontAwesomeIcons.circleInfo, color: Colors.blueAccent),
+            SizedBox(width: 10),
+            Text("Coming Soon"),
+          ],
+        ),
+        content: Text("$title feature is under development. Stay tuned!"),
+        actions: [
+          TextButton(
+            child: Text("OK", style: TextStyle(color: AppTheme.lightTheme.primaryColor)),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget _buildSettingsOption(BuildContext context, String title, String subtitle, IconData icon, VoidCallback onTap) {
     return Card(

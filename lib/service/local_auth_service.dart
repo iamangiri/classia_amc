@@ -27,20 +27,41 @@ class LocalAuthService {
     }
   }
 
+  // Get available biometric types
+  Future<List<BiometricType>> getAvailableBiometrics() async {
+    try {
+      return await _auth.getAvailableBiometrics();
+    } catch (e) {
+      print("Error getting available biometrics: $e");
+      return [];
+    }
+  }
+
   // Authenticate user using fingerprint or PIN
   Future<bool> authenticate() async {
-    if (isLockedOut()) {
-      print("Locked out. Try again in ${getRemainingLockTime()} seconds.");
-      return false;
-    }
-
-    bool isBiometricAvailable = await this.isBiometricAvailable();
-    if (!isBiometricAvailable) {
-      print("Biometric authentication not available.");
-      return false;
-    }
-
     try {
+      // Check if lockout period has expired
+      if (isLockedOut()) {
+        print("Locked out. Try again in ${getRemainingLockTime()} seconds.");
+        return false;
+      }
+
+      // Check if biometric authentication is available
+      bool isBiometricAvailable = await this.isBiometricAvailable();
+
+      // If no biometric authentication is available, return true to skip authentication
+      if (!isBiometricAvailable) {
+        print("Biometric authentication not available. Skipping authentication.");
+        return true;
+      }
+
+      // Double check with available biometrics
+      List<BiometricType> availableBiometrics = await getAvailableBiometrics();
+      if (availableBiometrics.isEmpty) {
+        print("No biometric methods available. Skipping authentication.");
+        return true;
+      }
+
       bool authenticated = await _auth.authenticate(
         localizedReason: 'Authenticate to access your account',
         options: const AuthenticationOptions(
@@ -61,11 +82,40 @@ class LocalAuthService {
         return false;
       }
     } on PlatformException catch (e) {
-      print("Error during authentication: ${e.message}");
-      if (e.code == "LockedOut" || e.code == "PermanentlyLockedOut") {
-        _setLock();
+      print("PlatformException during authentication: ${e.code} - ${e.message}");
+
+      // Handle specific error codes
+      switch (e.code) {
+        case "LockedOut":
+        case "PermanentlyLockedOut":
+          _setLock();
+          return false;
+
+        case "BiometricOnlyNotSupported":
+        case "NotAvailable":
+        case "NotEnrolled":
+        case "PasscodeNotSet":
+          print("Biometric authentication not available or not enrolled. Skipping authentication.");
+          return true;
+
+        case "UserCancel":
+        case "SystemCancel":
+          print("Authentication cancelled by user or system.");
+          return false;
+
+        case "InvalidContext":
+        case "BiometricBindingNotSet":
+          print("Authentication context error. Skipping authentication.");
+          return true;
+
+        default:
+          print("Unknown authentication error: ${e.code}. Skipping authentication.");
+          return true; // Allow access for unknown errors to prevent blank screen
       }
-      return false;
+    } catch (e) {
+      print("Unexpected error during authentication: $e");
+      // For any unexpected errors, allow access to prevent blank screen
+      return true;
     }
   }
 
@@ -91,5 +141,24 @@ class LocalAuthService {
   int getRemainingLockTime() {
     if (_lockEndTime == null) return 0;
     return _lockEndTime!.difference(DateTime.now()).inSeconds.clamp(0, 30);
+  }
+
+  // Reset authentication state
+  void resetAuthState() {
+    _isLocked = false;
+    _failedAttempts = 0;
+    _lockEndTime = null;
+  }
+
+  // Check if device has any form of security (PIN, Pattern, Password, Biometric)
+  Future<bool> hasDeviceSecurity() async {
+    try {
+      bool canCheckBiometrics = await _auth.canCheckBiometrics;
+      bool isDeviceSupported = await _auth.isDeviceSupported();
+      return canCheckBiometrics || isDeviceSupported;
+    } catch (e) {
+      print("Error checking device security: $e");
+      return false;
+    }
   }
 }

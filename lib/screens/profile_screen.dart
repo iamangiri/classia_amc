@@ -1,6 +1,7 @@
 import 'package:classia_amc/screens/invester_screen.dart';
 import 'package:classia_amc/screens/portfolio_screen.dart';
 import 'package:classia_amc/screens/userprofile/notification_screen.dart';
+import 'package:classia_amc/utils/constant/user_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../themes/light_app_theme.dart';
@@ -108,6 +109,7 @@ class ProfileScreen extends StatelessWidget {
                     child: InkWell(
                       onTap: () {
                         // Navigate to Edit Profile Screen
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfileScreen()));
                       },
                       borderRadius: BorderRadius.circular(25),
                       child: Padding(
@@ -129,14 +131,14 @@ class ProfileScreen extends StatelessWidget {
 
           // User Name
           Text(
-            "Aman Giri",
+            "${UserConstants.NAME}",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           SizedBox(height: 4),
 
           // Email
           Text(
-            "aman@classia.com",
+            "${UserConstants.EMAIL}",
             style: TextStyle(fontSize: 14, color: Colors.white70),
           ),
         ],
