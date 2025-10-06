@@ -92,9 +92,10 @@ flutter:
     - assets/images/logo.jpeg
     - assets/images/classia.jpg
     - assets/images/classia-logo.jpg
+    - assets/images/app-logo.png
 
 
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/classia.jpg"  # Path to your logo image
+  image_path: "assets/images/app-logo.png"  # Path to your logo image

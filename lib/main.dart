@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
             BlocProvider(create: (context) => TransactionBloc()..add(LoadTransactions())),
           ],
           child: MaterialApp.router(
-            title: 'Classia AMCs',
+            title: 'Classia Partner',
             theme: AppTheme.lightTheme,
             routerConfig: router,
             debugShowCheckedModeBanner: false,

@@ -41,7 +41,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                   },
                   children: [
   _buildOnboardingPage(
-    'Welcome to Classia AMC!',
+    'Welcome to Classia Partner!',
     'assets/anim/trade-4.json',
     'Manage your assets effortlessly and reach potential investors.',
   ),
