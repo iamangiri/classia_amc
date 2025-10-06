@@ -1,10 +1,11 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../../utils/constant/app_constant.dart' show AppConstant;
 import '../../utils/constant/user_constant.dart';
 
 class MarketApiService {
-  static const String _baseUrl = 'https://api.classiacapital.com';
+  
 
   // Fetch stock data from API
   Future<List<Map<String, dynamic>>> fetchStockData(int page, int limit) async {
@@ -12,7 +13,7 @@ class MarketApiService {
     if (token == null) throw Exception('No auth token found');
 
     final response = await http.get(
-      Uri.parse('$_baseUrl/amc/stock/list?page=$page&limit=$limit'),
+      Uri.parse('${AppConstant.API_URL}/amc/stock/list?page=$page&limit=$limit'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
@@ -31,7 +32,7 @@ class MarketApiService {
 
     final action = isSelected ? 'unpick' : 'pick';
     final response = await http.post(
-      Uri.parse('$_baseUrl/amc/select/stock'),
+      Uri.parse('${AppConstant.API_URL}/amc/select/stock'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/x-www-form-urlencoded',

@@ -14,7 +14,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.classia.jt"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 35  
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -23,16 +23,17 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "1.8"  // Use string format
     }
 
     defaultConfig {
         applicationId = "com.classia.jt"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode 3
-        versionName "1.0.3"
+        minSdk = 21  // Set explicitly
+        targetSdk = 34   // Set explicitly
+        versionCode = 3  // Add missing '='
+        versionName = "1.0.3"
     }
+
 
     signingConfigs {
         release {

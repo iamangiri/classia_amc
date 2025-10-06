@@ -1,17 +1,18 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../../utils/constant/app_constant.dart' show AppConstant;
 import '../../utils/constant/user_constant.dart';
 
 class ClassiaApiService {
-  static const String baseUrl = 'https://api.classiacapital.com';
+
   static  String authToken = "Bearer ${UserConstants.TOKEN}";
 
   // 📌 Get picked stock list
   Future<List<Map<String, dynamic>>> getPickedStockList({int limit = 10, int page = 1}) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/amc/picked/stock/list?limit=$limit&page=$page'),
+        Uri.parse('${AppConstant.API_URL}/amc/picked/stock/list?limit=$limit&page=$page'),
         headers: {
           'Authorization': authToken,
           'Content-Type': 'application/json',
@@ -48,7 +49,7 @@ class ClassiaApiService {
   Future<bool> selectStock(String stockId, String action) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/amc/select/stock'),
+        Uri.parse('${AppConstant.API_URL}/amc/select/stock'),
         headers: {
           'Authorization': authToken,
           'Content-Type': 'application/x-www-form-urlencoded',
