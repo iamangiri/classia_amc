@@ -2,7 +2,6 @@ import 'package:classia_amc/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
-import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../blocs/onboarding/onboarding_bloc.dart';
 import '../blocs/onboarding/onboarding_event.dart';

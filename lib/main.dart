@@ -1,3 +1,5 @@
+import 'package:classia_amc/blocs/basket/basket_bloc.dart';
+import 'package:classia_amc/blocs/basket/basket_event.dart';
 import 'package:classia_amc/utils/constant/user_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -32,9 +34,9 @@ class MyApp extends StatelessWidget {
         return MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => MainScreenBloc()),
-            BlocProvider(create: (context) => MarketBloc()..add(LoadMarketData())),
             BlocProvider(create: (context) => PortfolioBloc()..add(LoadPortfolioData())),
             BlocProvider(create: (context) => TransactionBloc()..add(LoadTransactions())),
+           
           ],
           child: MaterialApp.router(
             title: 'Classia Partner',

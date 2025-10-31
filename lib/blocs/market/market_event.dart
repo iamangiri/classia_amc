@@ -7,7 +7,13 @@ abstract class MarketEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadMarketData extends MarketEvent {}
+// market_event.dart
+class LoadMarketData extends MarketEvent {
+  final int page;
+  final int limit;
+  const LoadMarketData({required this.page, required this.limit});
+  @override List<Object> get props => [page, limit];
+}
 
 class SearchCompany extends MarketEvent {
   final String query;

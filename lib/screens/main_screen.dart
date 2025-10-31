@@ -7,10 +7,11 @@ import '../blocs/main_screen/main_screen_event.dart';
 import '../blocs/main_screen/main_screen_state.dart';
 import '../service/local_auth_service.dart';
 import '../themes/light_app_theme.dart';
+import 'basket_screen.dart';
 import 'home_screen.dart';
 import 'invester_screen.dart';
 import 'market_screen.dart';
-import 'portfolio_screen.dart';
+
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -142,8 +143,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         return Scaffold(
           bottomNavigationBar: MotionTabBar(
             controller: _motionTabBarController,
-            initialSelectedTab: ["Home", "Market", "Portfolio", "Investors"][selectedIndex],
-            labels: const ["Home", "Market", "Portfolio", "Investors"],
+            initialSelectedTab: ["Home", "Market", "Basket", "Investors"][selectedIndex],
+            labels: const ["Home", "Market", "Basket", "Investors"],
             icons: const [
               Icons.home,
               Icons.trending_up,
@@ -242,7 +243,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       case 1:
         return MarketScreen();
       case 2:
-        return PortfolioScreen();
+        return BasketScreen();
       case 3:
         return InvestorScreen();
       default:

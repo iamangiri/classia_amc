@@ -1,50 +1,97 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-import '../../utils/constant/app_constant.dart' show AppConstant;
+import '../../utils/constant/app_constant.dart';
 import '../../utils/constant/user_constant.dart';
 
 class MarketApiService {
-  
+  final String _base = AppConstant.NODE_API_URL;
 
-  // Fetch stock data from API
-  Future<List<Map<String, dynamic>>> fetchStockData(int page, int limit) async {
+  // Fetch all stocks
+  Future<List<Map<String, dynamic>>> fetchStocks({
+    int page = 1,
+    int limit = 50,
+  }) async {
     final token = UserConstants.TOKEN;
-    if (token == null) throw Exception('No auth token found');
+    if (token == null) throw Exception('No auth token');
 
-    final response = await http.get(
-      Uri.parse('${AppConstant.API_URL}/amc/stock/list?page=$page&limit=$limit'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
+    final uri = Uri.parse('$_base/basket/stocks-list?page=$page');
+    final resp = await http.get(uri, headers: {'Authorization': token});
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return List<Map<String, dynamic>>.from(data['data']['stocks']);
-    } else {
-      throw Exception('Failed to load stock data');
-    }
+    if (resp.statusCode != 200) throw Exception('Failed to load stocks');
+
+    final json = jsonDecode(resp.body);
+    final stocksList = json['data']['stocksList'] as List<dynamic>?;
+    
+    if (stocksList == null) return [];
+    
+    return stocksList.map((item) => item as Map<String, dynamic>).toList();
   }
 
-  // Toggle stock selection/unselection
-  Future<void> toggleStockSelection(String stockId, bool isSelected) async {
+  // Fetch all baskets
+  Future<Map<String, dynamic>> fetchBaskets() async {
     final token = UserConstants.TOKEN;
-    if (token == null) throw Exception('No auth token found');
+    if (token == null) throw Exception('No auth token');
 
-    final action = isSelected ? 'unpick' : 'pick';
-    final response = await http.post(
-      Uri.parse('${AppConstant.API_URL}/amc/select/stock'),
+    final uri = Uri.parse(
+        '$_base/basket/list?subscryptionType=FREE&volatility=LOW&status=ACTIVE&page=1&sizePerPage=50');
+
+    final resp = await http.get(uri, headers: {'Authorization': token});
+    if (resp.statusCode != 200) throw Exception('Failed to load baskets');
+
+    return jsonDecode(resp.body);
+  }
+
+  // Add stock to basket
+  Future<void> addStockToBasket({
+    required int basketId,
+    required int stockId,
+    required String holdinPercentage,
+    required String slPrice,
+    required String tgtPrice,
+    required String orderType,
+  }) async {
+    final token = UserConstants.TOKEN;
+    if (token == null) throw Exception('No auth token');
+
+    final resp = await http.post(
+      Uri.parse('$_base/basket/add-stocks'),
       headers: {
-        'Authorization': 'Bearer $token',
+        'Authorization': token,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: {
-        'stockId': stockId,
-        'action': action,
+        'basketId': basketId.toString(),
+        'stockId': stockId.toString(),
+        'holdinPercentage': holdinPercentage,
+        'slPrice': slPrice,
+        'tgtPrice': tgtPrice,
+        'orderType': orderType,
       },
     );
 
-    if (response.statusCode != 200) {
-      throw Exception('Failed to toggle stock selection');
-    }
+    if (resp.statusCode != 200) throw Exception('Add stock failed');
+  }
+
+  // Remove stock from basket
+  Future<void> removeStockFromBasket({
+    required int basketId,
+    required int stockId,
+  }) async {
+    final token = UserConstants.TOKEN;
+    if (token == null) throw Exception('No auth token');
+
+    final resp = await http.post(
+      Uri.parse('$_base/basket/remove-stocks'),
+      headers: {
+        'Authorization': token,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: {
+        'basketId': basketId.toString(),
+        'stockId': stockId.toString(),
+      },
+    );
+
+    if (resp.statusCode != 200) throw Exception('Remove stock failed');
   }
 }

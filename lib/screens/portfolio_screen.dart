@@ -6,7 +6,6 @@ import '../blocs/portfolio/portfolio_event.dart';
 import '../blocs/portfolio/portfolio_state.dart';
 import '../themes/light_app_theme.dart';
 import '../widgets/portfolio_company_list.dart';
-import '../widgets/portfolio_nav_section.dart';
 import '../widgets/portfolio_overview.dart';
 import 'market_screen.dart';
 
