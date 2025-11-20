@@ -9,10 +9,9 @@ import 'basket_screen.dart';
 import 'profile_screen.dart';
 import 'userprofile/notification_screen.dart';
 
-
 class MarketScreen extends StatefulWidget {
   final int? preSelectedBasketId;
-  
+
   const MarketScreen({Key? key, this.preSelectedBasketId}) : super(key: key);
 
   @override
@@ -28,10 +27,11 @@ class _MarketScreenState extends State<MarketScreen> {
   List<Map<String, dynamic>> _baskets = [];
   int? _selectedBasketId;
   Set<int> _basketStockIds = {};
-  
+
   bool _isLoadingStocks = false;
   bool _isLoadingBaskets = false;
   int _currentPage = 1;
+  final quantityCtrl = TextEditingController(text: '1');
 
   @override
   void initState() {
@@ -73,14 +73,13 @@ class _MarketScreenState extends State<MarketScreen> {
     setState(() => _isLoadingBaskets = true);
     try {
       final response = await _api.fetchBaskets();
-      final basketList = List<Map<String, dynamic>>.from(
-        response['data']['basketList']
-      );
-      
+      final basketList =
+          List<Map<String, dynamic>>.from(response['data']['basketList']);
+
       setState(() {
         _baskets = basketList;
         _isLoadingBaskets = false;
-        
+
         if (_selectedBasketId == null && _baskets.isNotEmpty) {
           _selectedBasketId = _baskets[0]['id'] as int;
           _updateBasketStockIds(_selectedBasketId!);
@@ -100,7 +99,7 @@ class _MarketScreenState extends State<MarketScreen> {
       (b) => b['id'] == basketId,
       orElse: () => {},
     );
-    
+
     if (basket.isNotEmpty) {
       final holdings = basket['holdings'] as List<dynamic>? ?? [];
       for (var holding in holdings) {
@@ -136,7 +135,8 @@ class _MarketScreenState extends State<MarketScreen> {
     final selectedId = await showDialog<int>(
       context: context,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         child: Container(
           constraints: BoxConstraints(maxHeight: 600.h),
           child: Column(
@@ -193,7 +193,8 @@ class _MarketScreenState extends State<MarketScreen> {
                     final basket = _baskets[index];
                     final basketId = basket['id'] as int;
                     final basketName = basket['basketName'] as String;
-                    final holdingsCount = (basket['holdings'] as List?)?.length ?? 0;
+                    final holdingsCount =
+                        (basket['holdings'] as List?)?.length ?? 0;
                     final isSelected = _selectedBasketId == basketId;
 
                     return Card(
@@ -218,7 +219,8 @@ class _MarketScreenState extends State<MarketScreen> {
                                 padding: EdgeInsets.all(10.w),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? AppTheme.lightTheme.primaryColor.withOpacity(0.1)
+                                      ? AppTheme.lightTheme.primaryColor
+                                          .withOpacity(0.1)
                                       : Colors.grey[100],
                                   borderRadius: BorderRadius.circular(10.r),
                                 ),
@@ -268,15 +270,18 @@ class _MarketScreenState extends State<MarketScreen> {
                                             vertical: 2.h,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: _getStatusColor(basket['status'])
+                                            color: _getStatusColor(
+                                                    basket['status'])
                                                 .withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(8.r),
+                                            borderRadius:
+                                                BorderRadius.circular(8.r),
                                           ),
                                           child: Text(
                                             basket['status'],
                                             style: TextStyle(
                                               fontSize: 10.sp,
-                                              color: _getStatusColor(basket['status']),
+                                              color: _getStatusColor(
+                                                  basket['status']),
                                               fontWeight: FontWeight.w600,
                                             ),
                                           ),
@@ -350,6 +355,7 @@ class _MarketScreenState extends State<MarketScreen> {
     if (result == null) return;
 
     try {
+      // ← UPDATED CALL: Now includes qantity parameter
       await _api.addStockToBasket(
         basketId: _selectedBasketId!,
         stockId: stockId,
@@ -357,11 +363,12 @@ class _MarketScreenState extends State<MarketScreen> {
         slPrice: result['slPrice']!,
         tgtPrice: result['tgtPrice']!,
         orderType: result['orderType']!,
+        qantity: result['qantity']!, // ← This matches your curl: qantity=5
       );
 
       setState(() => _basketStockIds.add(stockId));
-      _showSnackBar('Stock added to basket successfully');
-      _loadBaskets();
+      _showSnackBar('Stock added successfully');
+      _loadBaskets(); // Refresh basket holdings
     } catch (e) {
       _showSnackBar('Error adding stock: $e', isError: true);
     }
@@ -373,7 +380,8 @@ class _MarketScreenState extends State<MarketScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text(
           'Confirm',
           style: TextStyle(color: AppTheme.lightTheme.primaryColor),
@@ -388,7 +396,8 @@ class _MarketScreenState extends State<MarketScreen> {
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r)),
             ),
             child: const Text('Remove'),
           ),
@@ -422,7 +431,8 @@ class _MarketScreenState extends State<MarketScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
           title: Text(
             'Add Stock Details',
             style: TextStyle(color: AppTheme.lightTheme.primaryColor),
@@ -438,10 +448,12 @@ class _MarketScreenState extends State<MarketScreen> {
                     decoration: InputDecoration(
                       labelText: 'Holding Percentage',
                       suffixText: '%',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r)),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.r),
-                        borderSide: BorderSide(color: AppTheme.lightTheme.primaryColor),
+                        borderSide:
+                            BorderSide(color: AppTheme.lightTheme.primaryColor),
                       ),
                     ),
                     keyboardType: TextInputType.number,
@@ -456,14 +468,37 @@ class _MarketScreenState extends State<MarketScreen> {
                   ),
                   SizedBox(height: 12.h),
                   TextFormField(
+                    controller: quantityCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Quantity',
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r)),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.r),
+                        borderSide:
+                            BorderSide(color: AppTheme.lightTheme.primaryColor),
+                      ),
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return 'Required';
+                      if (int.tryParse(v) == null || int.parse(v) <= 0)
+                        return 'Enter valid quantity';
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 12.h),
+                  TextFormField(
                     controller: slPriceCtrl,
                     decoration: InputDecoration(
                       labelText: 'Stop Loss Price',
                       prefixText: '₹ ',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r)),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.r),
-                        borderSide: BorderSide(color: AppTheme.lightTheme.primaryColor),
+                        borderSide:
+                            BorderSide(color: AppTheme.lightTheme.primaryColor),
                       ),
                     ),
                     keyboardType: TextInputType.number,
@@ -474,10 +509,12 @@ class _MarketScreenState extends State<MarketScreen> {
                     decoration: InputDecoration(
                       labelText: 'Target Price',
                       prefixText: '₹ ',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r)),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.r),
-                        borderSide: BorderSide(color: AppTheme.lightTheme.primaryColor),
+                        borderSide:
+                            BorderSide(color: AppTheme.lightTheme.primaryColor),
                       ),
                     ),
                     keyboardType: TextInputType.number,
@@ -487,10 +524,12 @@ class _MarketScreenState extends State<MarketScreen> {
                     value: orderType,
                     decoration: InputDecoration(
                       labelText: 'Order Type',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.r)),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.r),
-                        borderSide: BorderSide(color: AppTheme.lightTheme.primaryColor),
+                        borderSide:
+                            BorderSide(color: AppTheme.lightTheme.primaryColor),
                       ),
                     ),
                     items: ['MARKET', 'LIMIT']
@@ -515,12 +554,15 @@ class _MarketScreenState extends State<MarketScreen> {
                     'slPrice': slPriceCtrl.text,
                     'tgtPrice': tgtPriceCtrl.text,
                     'orderType': orderType,
+                    'qantity':
+                        quantityCtrl.text, // ← THIS WAS MISSING! ADD THIS LINE
                   });
                 }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.lightTheme.primaryColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r)),
               ),
               child: const Text('Add'),
             ),
@@ -534,9 +576,11 @@ class _MarketScreenState extends State<MarketScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red : AppTheme.lightTheme.primaryColor,
+        backgroundColor:
+            isError ? Colors.red : AppTheme.lightTheme.primaryColor,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
       ),
     );
   }
@@ -546,7 +590,7 @@ class _MarketScreenState extends State<MarketScreen> {
       context,
       MaterialPageRoute(builder: (_) => const BasketScreen()),
     );
-    
+
     if (result == true || mounted) {
       _loadBaskets();
     }
@@ -556,12 +600,13 @@ class _MarketScreenState extends State<MarketScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar:AppBar(
+      appBar: AppBar(
         backgroundColor: AppTheme.lightTheme.primaryColor,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: FaIcon(FontAwesomeIcons.userCircle, color: Colors.white, size: 22),
+          icon: FaIcon(FontAwesomeIcons.userCircle,
+              color: Colors.white, size: 22),
           onPressed: () {
             Navigator.push(
               context,
@@ -583,7 +628,8 @@ class _MarketScreenState extends State<MarketScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CustomerSupportScreen()),
+                MaterialPageRoute(
+                    builder: (context) => CustomerSupportScreen()),
               );
             },
           ),
@@ -598,7 +644,6 @@ class _MarketScreenState extends State<MarketScreen> {
           ),
         ],
       ),
-    
       body: Column(
         children: [
           // Basket Selector - NEW DESIGN WITH DIALOG
@@ -630,7 +675,8 @@ class _MarketScreenState extends State<MarketScreen> {
                 _isLoadingBaskets
                     ? LinearProgressIndicator(
                         color: AppTheme.lightTheme.primaryColor,
-                        backgroundColor: AppTheme.lightTheme.primaryColor.withOpacity(0.2),
+                        backgroundColor:
+                            AppTheme.lightTheme.primaryColor.withOpacity(0.2),
                       )
                     : _baskets.isEmpty
                         ? _buildCreateBasketPrompt()
@@ -647,7 +693,8 @@ class _MarketScreenState extends State<MarketScreen> {
               controller: _searchCtrl,
               decoration: InputDecoration(
                 hintText: 'Search by name or symbol',
-                prefixIcon: Icon(Icons.search, color: AppTheme.lightTheme.primaryColor),
+                prefixIcon:
+                    Icon(Icons.search, color: AppTheme.lightTheme.primaryColor),
                 suffixIcon: _searchCtrl.text.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear),
@@ -663,7 +710,8 @@ class _MarketScreenState extends State<MarketScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: AppTheme.lightTheme.primaryColor),
+                  borderSide:
+                      BorderSide(color: AppTheme.lightTheme.primaryColor),
                 ),
                 filled: true,
                 fillColor: Colors.grey[50],
@@ -709,7 +757,8 @@ class _MarketScreenState extends State<MarketScreen> {
           ],
         ),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: AppTheme.lightTheme.primaryColor.withOpacity(0.2)),
+        border: Border.all(
+            color: AppTheme.lightTheme.primaryColor.withOpacity(0.2)),
       ),
       child: Column(
         children: [
@@ -928,12 +977,14 @@ class _MarketScreenState extends State<MarketScreen> {
                 ),
                 child: Icon(
                   isInBasket ? Icons.check_circle : Icons.show_chart,
-                  color: isInBasket ? Colors.green : AppTheme.lightTheme.primaryColor,
+                  color: isInBasket
+                      ? Colors.green
+                      : AppTheme.lightTheme.primaryColor,
                   size: 24,
                 ),
               ),
               SizedBox(width: 12.w),
-              
+
               // Stock Info
               Expanded(
                 child: Column(
@@ -983,18 +1034,20 @@ class _MarketScreenState extends State<MarketScreen> {
                   ],
                 ),
               ),
-              
+
               // Trailing Actions
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (isInBasket)
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: Colors.green.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(color: Colors.green.withOpacity(0.3)),
+                        border:
+                            Border.all(color: Colors.green.withOpacity(0.3)),
                       ),
                       child: Text(
                         'Added',
@@ -1006,7 +1059,7 @@ class _MarketScreenState extends State<MarketScreen> {
                       ),
                     ),
                   SizedBox(width: 8.w),
-                  
+
                   // Add/Remove Button
                   GestureDetector(
                     onTap: _selectedBasketId == null

@@ -30,8 +30,8 @@ android {
         applicationId = "com.classia.jt"
         minSdk = 21  // Set explicitly
         targetSdk = 35   // Set explicitly
-        versionCode = 6  // Add missing '='
-        versionName = "1.0.6"
+        versionCode = 7  // Add missing '='
+        versionName = "1.0.7"
     }
 
 

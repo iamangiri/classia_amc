@@ -1,5 +1,6 @@
 import 'package:classia_amc/screens/profile_screen.dart';
-import 'package:classia_amc/screens/userprofile/customer_support_screen.dart' show CustomerSupportScreen;
+import 'package:classia_amc/screens/userprofile/customer_support_screen.dart'
+    show CustomerSupportScreen;
 import 'package:classia_amc/screens/userprofile/notification_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -21,6 +22,12 @@ class _BasketScreenState extends State<BasketScreen> {
   bool _isLoading = false;
   int? _expandedBasketId;
 
+  // Filter states
+  String _selectedType = 'ALL';
+  String _selectedSubscriptionType = 'ALL';
+  String _selectedVolatility = 'ALL';
+  String _selectedStatus = 'ACTIVE';
+
   @override
   void initState() {
     super.initState();
@@ -30,9 +37,16 @@ class _BasketScreenState extends State<BasketScreen> {
   Future<void> _loadBaskets() async {
     setState(() => _isLoading = true);
     try {
-      final response = await _api.fetchBaskets();
+      final response = await _api.fetchBaskets(
+        type: _selectedType == 'ALL' ? null : _selectedType,
+        subscriptionType: _selectedSubscriptionType == 'ALL'
+            ? null
+            : _selectedSubscriptionType,
+        volatility: _selectedVolatility == 'ALL' ? null : _selectedVolatility,
+        status: _selectedStatus,
+      );
       setState(() {
-        _baskets = response['data']['basketList'];
+        _baskets = response['data']['basketList'] ?? [];
         _isLoading = false;
       });
     } catch (e) {
@@ -45,86 +59,176 @@ class _BasketScreenState extends State<BasketScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red : AppTheme.lightTheme.primaryColor,
+        backgroundColor:
+            isError ? Colors.red : AppTheme.lightTheme.primaryColor,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
       ),
     );
   }
 
   void _navigateToMarketWithBasket(int basketId) async {
-    final result = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => MarketScreen(preSelectedBasketId: basketId),
+          builder: (_) => MarketScreen(preSelectedBasketId: basketId)),
+    );
+    if (mounted) _loadBaskets();
+  }
+
+  // Show filter bottom sheet
+  void _showFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => Container(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Filters',
+                      style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.lightTheme.primaryColor)),
+                  TextButton(
+                    onPressed: () {
+                      setSheetState(() {
+                        _selectedType = 'ALL';
+                        _selectedSubscriptionType = 'ALL';
+                        _selectedVolatility = 'ALL';
+                        _selectedStatus = 'ACTIVE';
+                      });
+                    },
+                    child: const Text('Reset'),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.h),
+              _buildFilterDropdown(
+                'Basket Type',
+                _selectedType,
+                ['ALL', 'INTRADAY', 'INTRAHOUR', 'DELIVERY'],
+                (v) => setSheetState(() => _selectedType = v!),
+              ),
+              SizedBox(height: 12.h),
+              _buildFilterDropdown(
+                'Subscription Type',
+                _selectedSubscriptionType,
+                ['ALL', 'FREE', 'FEE-BASED'],
+                (v) => setSheetState(() => _selectedSubscriptionType = v!),
+              ),
+              SizedBox(height: 12.h),
+              _buildFilterDropdown(
+                'Volatility',
+                _selectedVolatility,
+                ['ALL', 'LOW', 'MID', 'HIGH'],
+                (v) => setSheetState(() => _selectedVolatility = v!),
+              ),
+              SizedBox(height: 12.h),
+              _buildFilterDropdown(
+                'Status',
+                _selectedStatus,
+                ['ACTIVE', 'INACTIVE'],
+                (v) => setSheetState(() => _selectedStatus = v!),
+              ),
+              SizedBox(height: 20.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _loadBaskets();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.lightTheme.primaryColor,
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.r)),
+                  ),
+                  child: const Text('Apply Filters',
+                      style: TextStyle(color: Colors.white)),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
-    
-    if (mounted) {
-      _loadBaskets();
-    }
+  }
+
+  Widget _buildFilterDropdown(String label, String value, List<String> items,
+      void Function(String?) onChanged) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+        contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      ),
+      items:
+          items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      onChanged: onChanged,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar:
-AppBar(
+      appBar: AppBar(
         backgroundColor: AppTheme.lightTheme.primaryColor,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: FaIcon(FontAwesomeIcons.userCircle, color: Colors.white, size: 22),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
-            );
-          },
+          icon: const FaIcon(FontAwesomeIcons.userCircle,
+              color: Colors.white, size: 22),
+          onPressed: () => Navigator.push(
+              context, MaterialPageRoute(builder: (_) => ProfileScreen())),
         ),
-        title: Text(
-          "Baskets",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18.sp,
-          ),
-        ),
+        title: Text("Baskets",
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18.sp)),
         actions: [
           IconButton(
-            icon: Icon(Icons.support_agent, color: Colors.white, size: 22),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CustomerSupportScreen()),
-              );
-            },
+            icon: const Icon(Icons.filter_list, color: Colors.white, size: 22),
+            onPressed: _showFilterSheet,
+            tooltip: 'Filter Baskets',
           ),
           IconButton(
-            icon: FaIcon(FontAwesomeIcons.bell, color: Colors.white, size: 22),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => NotificationScreen()),
-              );
-            },
-          ),
+              icon: const Icon(Icons.support_agent,
+                  color: Colors.white, size: 22),
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => CustomerSupportScreen()))),
+          IconButton(
+              icon: const FaIcon(FontAwesomeIcons.bell,
+                  color: Colors.white, size: 22),
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => NotificationScreen()))),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showBasketForm(),
         icon: const Icon(Icons.add, color: Colors.white),
-        label: Text('Create Basket', style: TextStyle(color: Colors.white)),
+        label:
+            const Text('Create Basket', style: TextStyle(color: Colors.white)),
         backgroundColor: AppTheme.lightTheme.primaryColor,
         elevation: 4,
       ),
       body: _isLoading
           ? Center(
               child: CircularProgressIndicator(
-                color: AppTheme.lightTheme.primaryColor,
-              ),
-            )
+                  color: AppTheme.lightTheme.primaryColor))
           : _baskets.isEmpty
               ? _buildEmptyState()
               : RefreshIndicator(
@@ -133,9 +237,7 @@ AppBar(
                   child: ListView.builder(
                     padding: EdgeInsets.all(16.w),
                     itemCount: _baskets.length,
-                    itemBuilder: (context, index) {
-                      return _buildBasketCard(_baskets[index]);
-                    },
+                    itemBuilder: (_, i) => _buildBasketCard(_baskets[i]),
                   ),
                 ),
     );
@@ -152,32 +254,22 @@ AppBar(
               Container(
                 padding: EdgeInsets.all(40.w),
                 decoration: BoxDecoration(
-                  color: AppTheme.lightTheme.primaryColor.withOpacity(0.05),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.shopping_basket_outlined,
-                  size: 80.w,
-                  color: AppTheme.lightTheme.primaryColor.withOpacity(0.3),
-                ),
+                    color: AppTheme.lightTheme.primaryColor.withOpacity(0.05),
+                    shape: BoxShape.circle),
+                child: Icon(Icons.shopping_basket_outlined,
+                    size: 80.w,
+                    color: AppTheme.lightTheme.primaryColor.withOpacity(0.3)),
               ),
               SizedBox(height: 24.h),
-              Text(
-                'No baskets yet',
-                style: TextStyle(
-                  fontSize: 22.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.lightTheme.primaryColor,
-                ),
-              ),
+              Text('No baskets found',
+                  style: TextStyle(
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.lightTheme.primaryColor)),
               SizedBox(height: 12.h),
-              Text(
-                'Create your first basket to get started',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Colors.grey[600],
-                ),
-              ),
+              Text('Try adjusting your filters or create a new basket',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14.sp, color: Colors.grey[600])),
             ],
           ),
         ),
@@ -200,71 +292,56 @@ AppBar(
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppTheme.lightTheme.primaryColor,
-                  AppTheme.lightTheme.primaryColor.withOpacity(0.8),
-                ],
-              ),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16.r),
-                topRight: Radius.circular(16.r),
-              ),
+              gradient: LinearGradient(colors: [
+                AppTheme.lightTheme.primaryColor,
+                AppTheme.lightTheme.primaryColor.withOpacity(0.8)
+              ]),
+              borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16), topRight: Radius.circular(16)),
             ),
             child: Row(
               children: [
                 Container(
                   padding: EdgeInsets.all(10.w),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Icon(
-                    Icons.shopping_basket_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10.r)),
+                  child: const Icon(Icons.shopping_basket_rounded,
+                      color: Colors.white, size: 24),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        basket['basketName'],
-                        style: TextStyle(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      Text(basket['basketName'],
+                          style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
                       SizedBox(height: 4.h),
-                      Text(
-                        'by ${basket['raName']}',
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: Colors.white70,
-                        ),
-                      ),
+                      Text('by ${basket['raName']}',
+                          style: TextStyle(
+                              fontSize: 12.sp, color: Colors.white70)),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.white, size: 20),
-                  onPressed: () => _showBasketForm(basket: basket),
+                    icon: const Icon(Icons.edit, color: Colors.white, size: 20),
+                    onPressed: () => _showBasketForm(basket: basket)),
+                IconButton(
+                  icon: const Icon(Icons.rate_review_outlined,
+                      color: Colors.white, size: 20),
+                  onPressed: () => _showReviewsDialog(basket['id']),
+                  tooltip: 'View Reviews',
                 ),
                 IconButton(
-                  icon: Icon(
-                    isExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _expandedBasketId = isExpanded ? null : basket['id'];
-                    });
-                  },
+                  icon: Icon(isExpanded ? Icons.expand_less : Icons.expand_more,
+                      color: Colors.white),
+                  onPressed: () => setState(() =>
+                      _expandedBasketId = isExpanded ? null : basket['id']),
                 ),
               ],
             ),
@@ -279,19 +356,15 @@ AppBar(
                 Row(
                   children: [
                     Expanded(
-                      child: _buildInfoItem(
-                        'Subscription',
-                        '₹${basket['subscriptionAmount']}',
-                        Icons.payment_rounded,
-                      ),
-                    ),
+                        child: _buildInfoItem(
+                            'Subscription',
+                            '₹${basket['subscriptionAmount']}',
+                            Icons.payment_rounded)),
                     Expanded(
-                      child: _buildInfoItem(
-                        'Expected Return',
-                        '${basket['expectedReturn']}%',
-                        Icons.trending_up_rounded,
-                      ),
-                    ),
+                        child: _buildInfoItem(
+                            'Expected Return',
+                            '${basket['expectedReturn']}%',
+                            Icons.trending_up_rounded)),
                   ],
                 ),
                 SizedBox(height: 16.h),
@@ -300,19 +373,19 @@ AppBar(
                   runSpacing: 8.h,
                   children: [
                     _buildChip(
-                      basket['subscryptionType'],
-                      basket['subscryptionType'] == 'FREE'
-                          ? Colors.green
-                          : AppTheme.lightTheme.hintColor,
-                    ),
+                        basket['subscryptionType'],
+                        basket['subscryptionType'] == 'FREE'
+                            ? Colors.green
+                            : AppTheme.lightTheme.hintColor),
+                    _buildChip(basket['volatility'],
+                        _getVolatilityColor(basket['volatility'])),
                     _buildChip(
-                      basket['volatility'],
-                      _getVolatilityColor(basket['volatility']),
-                    ),
-                    _buildChip(
-                      basket['status'],
-                      basket['status'] == 'ACTIVE' ? Colors.blue : Colors.grey,
-                    ),
+                        basket['status'],
+                        basket['status'] == 'ACTIVE'
+                            ? Colors.blue
+                            : Colors.grey),
+                    if (basket['type'] != null)
+                      _buildChip(basket['type'], _getTypeColor(basket['type'])),
                   ],
                 ),
               ],
@@ -325,58 +398,49 @@ AppBar(
     );
   }
 
-  Widget _buildInfoItem(String label, String value, IconData icon) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: AppTheme.lightTheme.primaryColor.withOpacity(0.6),
-            ),
-            SizedBox(width: 6.w),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.lightTheme.primaryColor,
-          ),
-        ),
-      ],
-    );
+  Color _getTypeColor(String type) {
+    switch (type) {
+      case 'INTRADAY':
+        return Colors.deepPurple;
+      case 'INTRAHOUR':
+        return Colors.teal;
+      case 'DELIVERY':
+        return Colors.brown;
+      default:
+        return Colors.grey;
+    }
   }
 
-  Widget _buildChip(String label, Color color) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11.sp,
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
+  Widget _buildInfoItem(String label, String value, IconData icon) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(icon,
+                size: 16,
+                color: AppTheme.lightTheme.primaryColor.withOpacity(0.6)),
+            SizedBox(width: 6.w),
+            Text(label,
+                style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]))
+          ]),
+          SizedBox(height: 4.h),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.lightTheme.primaryColor)),
+        ],
+      );
+
+  Widget _buildChip(String label, Color color) => Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+        decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: color.withOpacity(0.3))),
+        child: Text(label,
+            style: TextStyle(
+                fontSize: 11.sp, color: color, fontWeight: FontWeight.w600)),
+      );
 
   Color _getVolatilityColor(String volatility) {
     switch (volatility) {
@@ -396,10 +460,8 @@ AppBar(
       decoration: BoxDecoration(
         color: Colors.grey[50],
         border: Border(top: BorderSide(color: Colors.grey[300]!)),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(16.r),
-          bottomRight: Radius.circular(16.r),
-        ),
+        borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16)),
       ),
       padding: EdgeInsets.all(16.w),
       child: Column(
@@ -408,80 +470,46 @@ AppBar(
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.pie_chart_rounded,
-                    color: AppTheme.lightTheme.primaryColor,
-                    size: 20,
-                  ),
-                  SizedBox(width: 8.w),
-                  Text(
-                    'Holdings (${holdings.length})',
+              Row(children: [
+                Icon(Icons.pie_chart_rounded,
+                    color: AppTheme.lightTheme.primaryColor, size: 20),
+                SizedBox(width: 8.w),
+                Text('Holdings (${holdings.length})',
                     style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.lightTheme.primaryColor,
-                    ),
-                  ),
-                ],
-              ),
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.lightTheme.primaryColor))
+              ]),
               ElevatedButton.icon(
                 onPressed: () => _navigateToMarketWithBasket(basket['id']),
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add Stocks'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.lightTheme.primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                ),
+                    backgroundColor: AppTheme.lightTheme.primaryColor,
+                    foregroundColor: Colors.white),
               ),
             ],
           ),
           SizedBox(height: 12.h),
-          if (holdings.isEmpty)
-            Center(
-              child: Padding(
-                padding: EdgeInsets.all(20.h),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.inbox_outlined,
-                      size: 48,
-                      color: Colors.grey[400],
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      'No stocks in this basket',
-                      style: TextStyle(color: Colors.grey[500], fontSize: 14.sp),
-                    ),
-                    SizedBox(height: 8.h),
-                    TextButton.icon(
-                      onPressed: () => _navigateToMarketWithBasket(basket['id']),
-                      icon: Icon(
-                        Icons.add_circle_outline,
-                        color: AppTheme.lightTheme.primaryColor,
-                      ),
-                      label: Text(
-                        'Browse Market',
-                        style: TextStyle(color: AppTheme.lightTheme.primaryColor),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            ...holdings.map((holding) => _buildHoldingItem(basket['id'], holding)),
+          holdings.isEmpty
+              ? Center(
+                  child: Text('No stocks in this basket',
+                      style:
+                          TextStyle(color: Colors.grey[500], fontSize: 14.sp)))
+              : Column(
+                  children: holdings
+                      .map((h) => _buildHoldingItem(basket['id'], h))
+                      .toList()),
         ],
       ),
     );
   }
 
+  // Updated to show stock NAME instead of ID
   Widget _buildHoldingItem(int basketId, dynamic holding) {
+    final stockName = holding['name'] ?? holding['symbol'] ?? 'Unknown Stock';
+    final symbol = holding['symbol'] ?? '';
+
     return Card(
       margin: EdgeInsets.only(bottom: 8.h),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
@@ -489,174 +517,131 @@ AppBar(
         leading: Container(
           padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
-            color: AppTheme.lightTheme.primaryColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10.r),
-          ),
-          child: Icon(
-            Icons.show_chart,
-            color: AppTheme.lightTheme.primaryColor,
-            size: 24,
-          ),
+              color: AppTheme.lightTheme.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10.r)),
+          child: Icon(Icons.show_chart,
+              color: AppTheme.lightTheme.primaryColor, size: 24),
         ),
-        title: Text(
-          'Stock ID: ${holding['stockId']}',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 14.sp,
-            color: AppTheme.lightTheme.primaryColor,
-          ),
-        ),
+        title: Text(stockName,
+            style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14.sp,
+                color: AppTheme.lightTheme.primaryColor)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (symbol.isNotEmpty)
+              Text('Symbol: $symbol',
+                  style: TextStyle(fontSize: 11.sp, color: Colors.grey[600])),
             SizedBox(height: 4.h),
-            Text('Holding: ${holding['holdinPercentage']}% | ${holding['orderType']}'),
+            Text(
+                'Holding: ${holding['holdinPercentage']}% | ${holding['orderType']} | Qty: ${holding['qantity'] ?? 'N/A'}',
+                style: TextStyle(fontSize: 12.sp)),
             if (holding['slPrice'] != '0' || holding['tgtPrice'] != '0')
-              Text('SL: ${holding['slPrice']} | Target: ${holding['tgtPrice']}'),
+              Text('SL: ${holding['slPrice']} | Target: ${holding['tgtPrice']}',
+                  style: TextStyle(fontSize: 11.sp, color: Colors.grey[700])),
           ],
         ),
         trailing: IconButton(
-          icon: const Icon(Icons.delete, color: Colors.red),
-          onPressed: () => _removeStock(basketId, holding['stockId']),
-        ),
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () => _removeStock(basketId, holding['stockId'])),
       ),
     );
   }
 
+  // Basket form with type dropdown
   void _showBasketForm({dynamic basket}) {
     final isEdit = basket != null;
     final formKey = GlobalKey<FormState>();
-    
+
     final controllers = {
       'basketName': TextEditingController(text: basket?['basketName'] ?? ''),
-      'subscriptionAmount': TextEditingController(text: basket?['subscriptionAmount'] ?? ''),
+      'subscriptionAmount': TextEditingController(
+          text: basket?['subscriptionAmount']?.toString() ?? ''),
       'raName': TextEditingController(text: basket?['raName'] ?? ''),
-      'expectedReturn': TextEditingController(text: basket?['expectedReturn'] ?? ''),
+      'expectedReturn': TextEditingController(
+          text: basket?['expectedReturn']?.toString() ?? ''),
     };
 
     String subscriptionType = basket?['subscryptionType'] ?? 'FREE';
     String volatility = basket?['volatility'] ?? 'LOW';
     String status = basket?['status'] ?? 'ACTIVE';
+    String type = basket?['type'] ?? 'INTRADAY';
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
+      builder: (_) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-          title: Text(
-            isEdit ? 'Update Basket' : 'Create Basket',
-            style: TextStyle(color: AppTheme.lightTheme.primaryColor),
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          title: Text(isEdit ? 'Update Basket' : 'Create Basket',
+              style: TextStyle(color: AppTheme.lightTheme.primaryColor)),
           content: Form(
             key: formKey,
             child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                TextFormField(
                     controller: controllers['basketName'],
-                    decoration: InputDecoration(
-                      labelText: 'Basket Name',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                        borderSide: BorderSide(color: AppTheme.lightTheme.primaryColor),
-                      ),
-                    ),
-                    validator: (v) => v!.isEmpty ? 'Required' : null,
-                  ),
-                  SizedBox(height: 12.h),
-                  TextFormField(
+                    decoration: _inputDec('Basket Name'),
+                    validator: (v) => v!.isEmpty ? 'Required' : null),
+                SizedBox(height: 12.h),
+                TextFormField(
                     controller: controllers['subscriptionAmount'],
-                    decoration: InputDecoration(
-                      labelText: 'Subscription Amount',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                        borderSide: BorderSide(color: AppTheme.lightTheme.primaryColor),
-                      ),
-                    ),
+                    decoration: _inputDec('Subscription Amount'),
                     keyboardType: TextInputType.number,
-                    validator: (v) => v!.isEmpty ? 'Required' : null,
-                  ),
-                  SizedBox(height: 12.h),
-                  TextFormField(
+                    validator: (v) => v!.isEmpty ? 'Required' : null),
+                SizedBox(height: 12.h),
+                TextFormField(
                     controller: controllers['raName'],
-                    decoration: InputDecoration(
-                      labelText: 'RA Name',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                        borderSide: BorderSide(color: AppTheme.lightTheme.primaryColor),
-                      ),
-                    ),
-                    validator: (v) => v!.isEmpty ? 'Required' : null,
-                  ),
-                  SizedBox(height: 12.h),
-                  TextFormField(
+                    decoration: _inputDec('RA Name'),
+                    validator: (v) => v!.isEmpty ? 'Required' : null),
+                SizedBox(height: 12.h),
+                TextFormField(
                     controller: controllers['expectedReturn'],
-                    decoration: InputDecoration(
-                      labelText: 'Expected Return (%)',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                        borderSide: BorderSide(color: AppTheme.lightTheme.primaryColor),
-                      ),
-                    ),
+                    decoration: _inputDec('Expected Return (%)'),
                     keyboardType: TextInputType.number,
-                    validator: (v) => v!.isEmpty ? 'Required' : null,
-                  ),
-                  SizedBox(height: 12.h),
-                  DropdownButtonFormField<String>(
+                    validator: (v) => v!.isEmpty ? 'Required' : null),
+                SizedBox(height: 12.h),
+                DropdownButtonFormField<String>(
                     value: subscriptionType,
-                    decoration: InputDecoration(
-                      labelText: 'Subscription Type',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                        borderSide: BorderSide(color: AppTheme.lightTheme.primaryColor),
-                      ),
-                    ),
-                    items: ['FREE', 'PAID'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                    onChanged: (v) => setDialogState(() => subscriptionType = v!),
-                  ),
-                  SizedBox(height: 12.h),
-                  DropdownButtonFormField<String>(
+                    decoration: _inputDec('Subscription Type'),
+                    items: ['FREE', 'FEE-BASED']
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
+                    onChanged: (v) =>
+                        setDialogState(() => subscriptionType = v!)),
+                SizedBox(height: 12.h),
+                DropdownButtonFormField<String>(
                     value: volatility,
-                    decoration: InputDecoration(
-                      labelText: 'Volatility',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                        borderSide: BorderSide(color: AppTheme.lightTheme.primaryColor),
-                      ),
-                    ),
-                    items: ['LOW', 'MID', 'HIGH'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                    onChanged: (v) => setDialogState(() => volatility = v!),
-                  ),
-                  SizedBox(height: 12.h),
-                  DropdownButtonFormField<String>(
+                    decoration: _inputDec('Volatility'),
+                    items: ['LOW', 'MID', 'HIGH']
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
+                    onChanged: (v) => setDialogState(() => volatility = v!)),
+                SizedBox(height: 12.h),
+                DropdownButtonFormField<String>(
                     value: status,
-                    decoration: InputDecoration(
-                      labelText: 'Status',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                        borderSide: BorderSide(color: AppTheme.lightTheme.primaryColor),
-                      ),
-                    ),
-                    items: ['ACTIVE', 'INACTIVE'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                    onChanged: (v) => setDialogState(() => status = v!),
-                  ),
-                ],
-              ),
+                    decoration: _inputDec('Status'),
+                    items: ['ACTIVE', 'INACTIVE']
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
+                    onChanged: (v) => setDialogState(() => status = v!)),
+                SizedBox(height: 12.h),
+                DropdownButtonFormField<String>(
+                  value: type,
+                  decoration: _inputDec('Basket Type'),
+                  items: ['INTRADAY', 'INTRAHOUR', 'DELIVERY']
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (v) => setDialogState(() => type = v!),
+                ),
+              ]),
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
             ElevatedButton(
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
@@ -670,13 +655,12 @@ AppBar(
                     subscriptionType: subscriptionType,
                     volatility: volatility,
                     status: status,
+                    type: type,
                   );
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.lightTheme.primaryColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-              ),
+                  backgroundColor: AppTheme.lightTheme.primaryColor),
               child: Text(isEdit ? 'Update' : 'Create'),
             ),
           ],
@@ -684,6 +668,14 @@ AppBar(
       ),
     );
   }
+
+  InputDecoration _inputDec(String label) => InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.r)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.r),
+            borderSide: BorderSide(color: AppTheme.lightTheme.primaryColor)),
+      );
 
   Future<void> _saveBasket({
     int? basketId,
@@ -694,6 +686,7 @@ AppBar(
     required String subscriptionType,
     required String volatility,
     required String status,
+    required String type,
   }) async {
     try {
       if (basketId == null) {
@@ -705,6 +698,7 @@ AppBar(
           subscriptionType: subscriptionType,
           volatility: volatility,
           status: status,
+          type: type,
         );
         _showSnackBar('Basket created successfully');
       } else {
@@ -717,6 +711,7 @@ AppBar(
           subscriptionType: subscriptionType,
           volatility: volatility,
           status: status,
+          type: type,
         );
         _showSnackBar('Basket updated successfully');
       }
@@ -726,29 +721,145 @@ AppBar(
     }
   }
 
+  // Updated Reviews Dialog
+  void _showReviewsDialog(int basketId) async {
+    setState(() => _isLoading = true);
+    try {
+      final reviews = await _api.fetchReviews(basketId: basketId);
+      setState(() => _isLoading = false);
+
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          title: Row(
+            children: [
+              Icon(Icons.star, color: Colors.amber, size: 24),
+              SizedBox(width: 8.w),
+              Text('Reviews (${reviews.length})',
+                  style: TextStyle(color: AppTheme.lightTheme.primaryColor)),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400.h,
+            child: reviews.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.rate_review_outlined,
+                            size: 60, color: Colors.grey[400]),
+                        SizedBox(height: 16.h),
+                        Text('No reviews yet',
+                            style: TextStyle(
+                                fontSize: 16.sp, color: Colors.grey[600])),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: reviews.length,
+                    itemBuilder: (_, i) {
+                      final r = reviews[i];
+                      final rating = (r['review'] as num?)?.toInt() ?? 0;
+                      final userName = r['userName'] ?? 'User #${r['userId']}';
+
+                      return Card(
+                        margin: EdgeInsets.only(bottom: 12.h),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: AppTheme.lightTheme.primaryColor,
+                            child: Text(
+                              userName[0].toUpperCase(),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: 6.h),
+                              Row(
+                                children: List.generate(
+                                  5,
+                                  (j) => Icon(
+                                    Icons.star,
+                                    size: 16,
+                                    color: j < rating
+                                        ? Colors.amber
+                                        : Colors.grey[400]!,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 6.h),
+                              Text(r['comment'] ?? 'No comment',
+                                  style: TextStyle(fontSize: 13.sp)),
+                              SizedBox(height: 4.h),
+                              Text(
+                                _formatDate(r['createdAt']),
+                                style: TextStyle(
+                                    fontSize: 11.sp, color: Colors.grey[600]),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'))
+          ],
+        ),
+      );
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showSnackBar('Failed to load reviews: $e', isError: true);
+    }
+  }
+
+  String _formatDate(dynamic dateStr) {
+    if (dateStr == null) return 'N/A';
+    try {
+      final date = DateTime.parse(dateStr.toString());
+      final now = DateTime.now();
+      final diff = now.difference(date);
+
+      if (diff.inDays == 0) {
+        if (diff.inHours == 0) {
+          return '${diff.inMinutes} minutes ago';
+        }
+        return '${diff.inHours} hours ago';
+      } else if (diff.inDays < 7) {
+        return '${diff.inDays} days ago';
+      } else {
+        return '${date.day}/${date.month}/${date.year}';
+      }
+    } catch (e) {
+      return 'N/A';
+    }
+  }
+
   Future<void> _removeStock(int basketId, int stockId) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: Text(
-          'Confirm',
-          style: TextStyle(color: AppTheme.lightTheme.primaryColor),
-        ),
+      builder: (_) => AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text('Confirm',
+            style: TextStyle(color: AppTheme.lightTheme.primaryColor)),
         content: const Text('Remove this stock from basket?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel')),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-            ),
-            child: const Text('Remove'),
-          ),
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Remove')),
         ],
       ),
     );

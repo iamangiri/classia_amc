@@ -42,35 +42,40 @@ class MarketApiService {
   }
 
   // Add stock to basket
-  Future<void> addStockToBasket({
-    required int basketId,
-    required int stockId,
-    required String holdinPercentage,
-    required String slPrice,
-    required String tgtPrice,
-    required String orderType,
-  }) async {
-    final token = UserConstants.TOKEN;
-    if (token == null) throw Exception('No auth token');
+// Add stock to basket - NOW WITH qantity (as per your backend)
+Future<void> addStockToBasket({
+  required int basketId,
+  required int stockId,
+  required String holdinPercentage,
+  required String slPrice,
+  required String tgtPrice,
+  required String orderType,
+  required String qantity, // ← NOTE: backend uses "qantity" (typo), not "quantity"
+}) async {
+  final token = UserConstants.TOKEN;
+  if (token == null) throw Exception('No auth token');
 
-    final resp = await http.post(
-      Uri.parse('$_base/basket/add-stocks'),
-      headers: {
-        'Authorization': token,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: {
-        'basketId': basketId.toString(),
-        'stockId': stockId.toString(),
-        'holdinPercentage': holdinPercentage,
-        'slPrice': slPrice,
-        'tgtPrice': tgtPrice,
-        'orderType': orderType,
-      },
-    );
+  final resp = await http.post(
+    Uri.parse('$_base/basket/add-stocks'),
+    headers: {
+      'Authorization': token,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: {
+      'basketId': basketId.toString(),
+      'stockId': stockId.toString(),
+      'holdinPercentage': holdinPercentage,
+      'slPrice': slPrice,
+      'tgtPrice': tgtPrice,
+      'orderType': orderType,
+      'qantity': qantity, // ← EXACTLY as backend expects
+    },
+  );
 
-    if (resp.statusCode != 200) throw Exception('Add stock failed');
+  if (resp.statusCode != 200) {
+    throw Exception('Add stock failed: ${resp.body}');
   }
+}
 
   // Remove stock from basket
   Future<void> removeStockFromBasket({
